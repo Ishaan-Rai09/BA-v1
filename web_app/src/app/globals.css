@@ -1,0 +1,344 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap');
+
+/* CSS Variables for dynamic theming */
+:root {
+  --color-primary: 14 165 233;
+  --color-primary-foreground: 255 255 255;
+  --color-background: 255 255 255;
+  --color-foreground: 15 23 42;
+  --color-card: 255 255 255;
+  --color-card-foreground: 15 23 42;
+  --color-popover: 255 255 255;
+  --color-popover-foreground: 15 23 42;
+  --color-secondary: 241 245 249;
+  --color-secondary-foreground: 15 23 42;
+  --color-muted: 241 245 249;
+  --color-muted-foreground: 100 116 139;
+  --color-accent: 241 245 249;
+  --color-accent-foreground: 15 23 42;
+  --color-destructive: 239 68 68;
+  --color-destructive-foreground: 248 250 252;
+  --color-border: 226 232 240;
+  --color-input: 226 232 240;
+  --color-ring: 14 165 233;
+  --radius: 0.5rem;
+  
+  /* Accessibility variables */
+  --focus-ring-width: 3px;
+  --focus-ring-color: 255 191 0;
+  --focus-ring-offset: 2px;
+  
+  /* Luxury gradients */
+  --gradient-luxury: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-gold: linear-gradient(135deg, #d4af37 0%, #ffd700 100%);
+  --gradient-platinum: linear-gradient(135deg, #e5e4e2 0%, #f8f9fa 100%);
+  --gradient-ocean: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+}
+
+/* Dark mode variables */
+.dark {
+  --color-background: 15 23 42;
+  --color-foreground: 248 250 252;
+  --color-card: 30 41 59;
+  --color-card-foreground: 248 250 252;
+  --color-popover: 30 41 59;
+  --color-popover-foreground: 248 250 252;
+  --color-secondary: 30 41 59;
+  --color-secondary-foreground: 248 250 252;
+  --color-muted: 30 41 59;
+  --color-muted-foreground: 148 163 184;
+  --color-accent: 30 41 59;
+  --color-accent-foreground: 248 250 252;
+  --color-border: 30 41 59;
+  --color-input: 30 41 59;
+}
+
+/* Base styles */
+* {
+  @apply border-slate-200;
+}
+
+body {
+  @apply bg-white text-slate-900;
+  font-feature-settings: "rlig" 1, "calt" 1;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Accessibility enhancements */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: var(--focus-ring-width) solid rgb(var(--focus-ring-color));
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: 0 0 0 var(--focus-ring-width) rgba(var(--focus-ring-color), 0.3);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: 0 0 0;
+    --color-foreground: 0 0 0;
+    --color-background: 255 255 255;
+  }
+  
+  .dark {
+    --color-border: 255 255 255;
+    --color-foreground: 255 255 255;
+    --color-background: 0 0 0;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-blue-500/60 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-blue-500/80;
+}
+
+/* Selection styles */
+::selection {
+  @apply bg-blue-500/20 text-blue-900;
+}
+
+/* Utility classes */
+.luxury-gradient {
+  background: var(--gradient-luxury);
+}
+
+.gold-gradient {
+  background: var(--gradient-gold);
+}
+
+.platinum-gradient {
+  background: var(--gradient-platinum);
+}
+
+.ocean-gradient {
+  background: var(--gradient-ocean);
+}
+
+.glass-effect {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.luxury-card {
+  @apply bg-white/90 backdrop-blur-sm border border-white/20 shadow-luxury rounded-2xl;
+}
+
+.dark .luxury-card {
+  @apply bg-slate-900/90 border-slate-700/50;
+}
+
+.luxury-button {
+  @apply bg-gradient-to-r from-primary-600 to-primary-700 text-white font-medium py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 focus-visible-enhanced;
+}
+
+.luxury-input {
+  @apply bg-white/50 border-2 border-white/20 rounded-xl px-4 py-3 text-slate-900 placeholder-slate-500 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-300;
+}
+
+.dark .luxury-input {
+  @apply bg-slate-800/50 border-slate-700/50;
+}
+
+/* Animation classes */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(14, 165, 233, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(14, 165, 233, 0.8);
+  }
+}
+
+/* Voice feedback styles */
+.voice-recording {
+  @apply animate-pulse-glow;
+}
+
+.voice-processing {
+  @apply animate-spin;
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(110deg, #e2e8f0 8%, #f1f5f9 18%, #e2e8f0 33%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Accessibility helpers */
+.sr-only {
+  @apply screen-reader-only;
+}
+
+.focus-trap {
+  @apply focus:outline-none focus-visible:outline-none;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .luxury-button {
+    @apply py-3 px-6 text-sm;
+  }
+  
+  .luxury-card {
+    @apply rounded-xl;
+  }
+  
+  .luxury-input {
+    @apply py-3 px-4 text-base;
+  }
+}
+
+/* Print styles */
+@media print {
+  * {
+    @apply text-black bg-white;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Custom component styles */
+.webcam-container {
+  @apply relative overflow-hidden rounded-2xl shadow-luxury;
+}
+
+.webcam-overlay {
+  @apply absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none;
+}
+
+.detection-box {
+  @apply absolute border-2 border-primary-500 bg-primary-500/20 rounded-lg backdrop-blur-sm;
+}
+
+.detection-label {
+  @apply absolute -top-8 left-0 bg-primary-600 text-white px-2 py-1 rounded-md text-sm font-medium;
+}
+
+/* Map styles */
+.map-container {
+  @apply relative overflow-hidden rounded-2xl shadow-luxury;
+}
+
+.map-overlay {
+  @apply absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg;
+}
+
+.dark .map-overlay {
+  @apply bg-slate-900/90;
+}
+
+/* Voice command styles */
+.voice-command-active {
+  @apply ring-4 ring-primary-500/50 shadow-glow;
+}
+
+.voice-command-listening {
+  @apply ring-4 ring-green-500/50 shadow-[0_0_20px_rgba(34,197,94,0.5)];
+}
+
+.voice-command-processing {
+  @apply ring-4 ring-yellow-500/50 shadow-[0_0_20px_rgba(234,179,8,0.5)];
+}
+
+.voice-command-error {
+  @apply ring-4 ring-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.5)];
+}
+
+/* Status indicators */
+.status-online {
+  @apply bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)];
+}
+
+.status-offline {
+  @apply bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)];
+}
+
+.status-processing {
+  @apply bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] animate-pulse;
+}
+
+/* Notification styles */
+.notification-enter {
+  @apply transform transition-all duration-300 ease-out translate-y-2 opacity-0;
+}
+
+.notification-enter-active {
+  @apply translate-y-0 opacity-100;
+}
+
+.notification-exit {
+  @apply transform transition-all duration-200 ease-in translate-y-0 opacity-100;
+}
+
+.notification-exit-active {
+  @apply -translate-y-2 opacity-0;
+}

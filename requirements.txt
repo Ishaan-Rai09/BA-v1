@@ -1,0 +1,13 @@
+kivy
+opencv-python
+SpeechRecognition
+gtts
+pygame
+geopy
+openrouteservice
+pyttsx3
+numpy
+folium
+fastapi
+uvicorn
+python-multipart
