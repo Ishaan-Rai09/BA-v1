@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Mic, 
@@ -39,6 +39,13 @@ import { StatusIndicator } from '@/components/common/ui/StatusIndicator'
 // Define the status type to match StatusIndicator component
 type StatusType = 'online' | 'offline' | 'processing' | 'warning' | 'standby';
 
+interface DetectedObject {
+  label: string
+  confidence: number
+  bbox: [number, number, number, number]
+  id: string
+}
+
 export default function Dashboard() {
   // Mock user for demo
   const user = { firstName: 'Demo', lastName: 'User', email: 'demo@example.com' }
@@ -73,6 +80,8 @@ export default function Dashboard() {
     { id: 1, title: 'System Update', message: 'New features available', time: '2 hours ago', read: false },
     { id: 2, title: 'Location Services', message: 'GPS signal improved', time: '1 day ago', read: true }
   ])
+  const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([])
+  const webcamVideoRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
     // Check if mobile
@@ -147,6 +156,7 @@ export default function Dashboard() {
       speak('Navigation panel opened')
     } else if (lowerCommand.includes('detect') || lowerCommand.includes('objects')) {
       setActivePanel('detection')
+      setCameraEnabled(true)
       speak('Object detection panel opened')
     } else if (lowerCommand.includes('emergency') || lowerCommand.includes('help')) {
       setActivePanel('emergency')
@@ -154,12 +164,30 @@ export default function Dashboard() {
     } else if (lowerCommand.includes('voice') || lowerCommand.includes('commands')) {
       setActivePanel('voice')
       speak('Voice command panel opened')
+    } else if (lowerCommand.includes('turn on camera')) {
+      setCameraEnabled(true)
+      speak('Camera turned on')
+    } else if (lowerCommand.includes('turn off camera')) {
+      setCameraEnabled(false)
+      speak('Camera turned off')
     }
+  }
+
+  const handleObjectDetected = (object: DetectedObject) => {
+    setDetectedObjects(prev => {
+      // Check if object already exists
+      const exists = prev.some(obj => obj.id === object.id)
+      if (exists) return prev
+      
+      // Add new object and limit to 10 most recent
+      const updated = [object, ...prev].slice(0, 10)
+      return updated
+    })
   }
 
   const panelVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } }
   }
 
   return (
@@ -220,28 +248,42 @@ export default function Dashboard() {
                 }
               }}
               size="sm"
-              className={`relative ${isListening ? 'voice-command-listening' : ''} ${isProcessing ? 'voice-command-processing' : ''}`}
+              className={`relative ${isListening ? 'bg-red-600 hover:bg-red-700' : 'bg-primary-600 hover:bg-primary-700'}`}
               disabled={systemStatus.microphone === 'offline'}
               aria-label={isListening ? 'Stop voice command' : 'Start voice command'}
             >
-              {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              {isListening ? (
+                <>
+                  <MicOff className="w-4 h-4 mr-1" /> Stop
+                </>
+              ) : (
+                <>
+                  <Mic className="w-4 h-4 mr-1" /> Voice
+                </>
+              )}
             </LuxuryButton>
             
-            {/* Notifications */}
-            <div className="relative">
-              <button 
-                className="p-2 rounded-full hover:bg-slate-100 relative"
-                aria-label="Notifications"
-              >
-                <Bell className="w-5 h-5" />
-                {notifications.some(n => !n.read) && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                )}
-              </button>
-            </div>
+            {/* Camera Toggle Button */}
+            <LuxuryButton
+              onClick={() => setCameraEnabled(!cameraEnabled)}
+              size="sm"
+              className={`relative ${cameraEnabled ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-600 hover:bg-slate-700'}`}
+              disabled={systemStatus.camera === 'offline'}
+              aria-label={cameraEnabled ? 'Turn off camera' : 'Turn on camera'}
+            >
+              {cameraEnabled ? (
+                <>
+                  <Camera className="w-4 h-4 mr-1" /> On
+                </>
+              ) : (
+                <>
+                  <CameraOff className="w-4 h-4 mr-1" /> Off
+                </>
+              )}
+            </LuxuryButton>
             
             {/* User Menu */}
-            <div className="relative">
+            <div className="relative ml-2">
               <button 
                 className="flex items-center space-x-2 p-1 rounded-full hover:bg-slate-100"
                 aria-label="User menu"
@@ -249,412 +291,243 @@ export default function Dashboard() {
                 <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-medium">
                   {user.firstName[0]}
                 </div>
-                <span className="hidden md:inline-block font-medium">
-                  {user.firstName}
-                </span>
               </button>
             </div>
           </div>
         </div>
       </header>
-
-      {/* Sidebar */}
-      <aside 
-        className={`fixed top-16 left-0 bottom-0 w-64 bg-white border-r border-slate-200 shadow-sm z-20 transform transition-transform duration-300 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
-      >
-        <div className="h-full flex flex-col">
-          {/* Main Navigation */}
-          <nav className="flex-1 p-4 overflow-y-auto">
-            <div className="mb-8">
-              <h2 className="text-xs uppercase text-slate-500 font-semibold mb-2 px-2">Main</h2>
-              <ul className="space-y-1">
-                <li>
-                  <a 
-                    href="/dashboard" 
-                    className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-primary-50 text-primary-700"
+      
+      {/* Main Layout */}
+      <div className="pt-16 flex h-[calc(100vh-4rem)]">
+        {/* Sidebar */}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.aside
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 240, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              className="bg-white border-r border-slate-200 h-full fixed left-0 top-16 z-20 overflow-y-auto"
+            >
+              <div className="p-4">
+                <nav className="space-y-1">
+                  <button
+                    onClick={() => {
+                      setActivePanel('webcam')
+                      speak('Camera view activated')
+                    }}
+                    className={`flex items-center w-full p-3 rounded-lg ${
+                      activePanel === 'webcam' 
+                        ? 'bg-primary-50 text-primary-700' 
+                        : 'hover:bg-slate-50'
+                    }`}
                   >
-                    <Home className="w-5 h-5" />
-                    <span>Dashboard</span>
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="/dashboard/analytics" 
-                    className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700"
+                    <Camera className="w-5 h-5 mr-3" />
+                    <span>Camera Feed</span>
+                    {activePanel === 'webcam' && (
+                      <ChevronRight className="w-4 h-4 ml-auto" />
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setActivePanel('detection')
+                      speak('Object detection activated')
+                    }}
+                    className={`flex items-center w-full p-3 rounded-lg ${
+                      activePanel === 'detection' 
+                        ? 'bg-primary-50 text-primary-700' 
+                        : 'hover:bg-slate-50'
+                    }`}
                   >
-                    <BarChart3 className="w-5 h-5" />
-                    <span>Analytics</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-            
-            <div className="mb-8">
-              <h2 className="text-xs uppercase text-slate-500 font-semibold mb-2 px-2">Features</h2>
-              <ul className="space-y-1">
-                {[
-                  { id: 'webcam', label: 'Camera Feed', icon: Camera },
-                  { id: 'voice', label: 'Voice Commands', icon: Mic },
-                  { id: 'navigation', label: 'Navigation', icon: Navigation },
-                  { id: 'detection', label: 'Object Detection', icon: Eye },
-                  { id: 'emergency', label: 'Emergency', icon: AlertTriangle }
-                ].map((item) => (
-                  <li key={item.id}>
+                    <Eye className="w-5 h-5 mr-3" />
+                    <span>Object Detection</span>
+                    {activePanel === 'detection' && (
+                      <ChevronRight className="w-4 h-4 ml-auto" />
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setActivePanel('navigation')
+                      speak('Navigation activated')
+                    }}
+                    className={`flex items-center w-full p-3 rounded-lg ${
+                      activePanel === 'navigation' 
+                        ? 'bg-primary-50 text-primary-700' 
+                        : 'hover:bg-slate-50'
+                    }`}
+                  >
+                    <Navigation className="w-5 h-5 mr-3" />
+                    <span>Navigation</span>
+                    {activePanel === 'navigation' && (
+                      <ChevronRight className="w-4 h-4 ml-auto" />
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setActivePanel('voice')
+                      speak('Voice commands activated')
+                    }}
+                    className={`flex items-center w-full p-3 rounded-lg ${
+                      activePanel === 'voice' 
+                        ? 'bg-primary-50 text-primary-700' 
+                        : 'hover:bg-slate-50'
+                    }`}
+                  >
+                    <Mic className="w-5 h-5 mr-3" />
+                    <span>Voice Commands</span>
+                    {activePanel === 'voice' && (
+                      <ChevronRight className="w-4 h-4 ml-auto" />
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={() => {
+                      setActivePanel('emergency')
+                      speak('Emergency panel activated')
+                    }}
+                    className={`flex items-center w-full p-3 rounded-lg ${
+                      activePanel === 'emergency' 
+                        ? 'bg-primary-50 text-primary-700' 
+                        : 'hover:bg-slate-50'
+                    }`}
+                  >
+                    <AlertTriangle className="w-5 h-5 mr-3" />
+                    <span>Emergency</span>
+                    {activePanel === 'emergency' && (
+                      <ChevronRight className="w-4 h-4 ml-auto" />
+                    )}
+                  </button>
+                </nav>
+                
+                <div className="mt-8 pt-4 border-t border-slate-200">
+                  <h3 className="text-xs uppercase text-slate-500 font-medium mb-2 px-3">Settings</h3>
+                  <div className="space-y-1">
                     <button
-                      onClick={() => {
-                        setActivePanel(item.id as any)
-                        speak(`${item.label} panel opened`)
-                        if (isMobile) setSidebarOpen(false)
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-300 ${
-                        activePanel === item.id 
-                          ? 'bg-primary-50 text-primary-700' 
-                          : 'hover:bg-slate-50 text-slate-700'
-                      }`}
-                      aria-label={`Open ${item.label}`}
+                      onClick={toggleHighContrast}
+                      className="flex items-center w-full p-3 rounded-lg hover:bg-slate-50"
                     >
-                      <div className="flex items-center space-x-3">
-                        <item.icon className="w-5 h-5" />
-                        <span>{item.label}</span>
-                      </div>
-                      <ChevronRight className={`w-4 h-4 transition-transform ${activePanel === item.id ? 'rotate-90' : ''}`} />
+                      <Settings className="w-5 h-5 mr-3" />
+                      <span>High Contrast: {highContrast ? 'On' : 'Off'}</span>
                     </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            <div>
-              <h2 className="text-xs uppercase text-slate-500 font-semibold mb-2 px-2">Support</h2>
-              <ul className="space-y-1">
-                <li>
-                  <a 
-                    href="/dashboard/help" 
-                    className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700"
-                  >
-                    <HelpCircle className="w-5 h-5" />
-                    <span>Help & Support</span>
-                  </a>
-                </li>
-                <li>
-                  <a 
-                    href="/dashboard/settings" 
-                    className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-slate-50 text-slate-700"
-                  >
-                    <Settings className="w-5 h-5" />
-                    <span>Settings</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </nav>
-          
-          {/* Bottom Actions */}
-          <div className="p-4 border-t border-slate-200">
-            <button 
-              onClick={() => {
-                toggleHighContrast()
-                speak(highContrast ? 'High contrast disabled' : 'High contrast enabled')
-              }}
-              className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 text-slate-700 mb-2"
-            >
-              <span>High Contrast</span>
-              <div className={`w-10 h-5 rounded-full p-1 transition-colors ${highContrast ? 'bg-primary-600' : 'bg-slate-300'}`}>
-                <div className={`w-3 h-3 rounded-full bg-white transform transition-transform ${highContrast ? 'translate-x-5' : ''}`}></div>
+                    
+                    <button
+                      onClick={toggleVoice}
+                      className="flex items-center w-full p-3 rounded-lg hover:bg-slate-50"
+                    >
+                      {voiceEnabled ? (
+                        <Volume2 className="w-5 h-5 mr-3" />
+                      ) : (
+                        <VolumeX className="w-5 h-5 mr-3" />
+                      )}
+                      <span>Voice Feedback: {voiceEnabled ? 'On' : 'Off'}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
-            </button>
-            
-            <button 
-              onClick={() => {
-                toggleVoice()
-                speak(voiceEnabled ? 'Voice disabled' : 'Voice enabled')
-              }}
-              className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 text-slate-700"
-            >
-              <span>Voice Feedback</span>
-              <div className={`w-10 h-5 rounded-full p-1 transition-colors ${voiceEnabled ? 'bg-primary-600' : 'bg-slate-300'}`}>
-                <div className={`w-3 h-3 rounded-full bg-white transform transition-transform ${voiceEnabled ? 'translate-x-5' : ''}`}></div>
-              </div>
-            </button>
-            
-            <button className="w-full flex items-center space-x-3 px-3 py-2 mt-4 rounded-lg text-red-600 hover:bg-red-50">
-              <LogOut className="w-5 h-5" />
-              <span>Sign Out</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'lg:pl-64' : ''}`}>
-        <div className="p-6">
-          {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-serif font-bold text-slate-900">Dashboard</h1>
-            <p className="text-slate-500">Welcome back, {user.firstName}. Your assistive technology is ready.</p>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+        
+        {/* Main Content */}
+        <main 
+          className={`flex-1 p-4 overflow-y-auto transition-all duration-300 ${
+            sidebarOpen ? 'md:ml-60' : ''
+          }`}
+        >
+          {/* Panel Title */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold">
+              {activePanel === 'webcam' && 'Camera Feed'}
+              {activePanel === 'detection' && 'Object Detection'}
+              {activePanel === 'navigation' && 'Navigation'}
+              {activePanel === 'voice' && 'Voice Commands'}
+              {activePanel === 'emergency' && 'Emergency Services'}
+            </h1>
+            <p className="text-slate-500">
+              {activePanel === 'webcam' && 'View your surroundings through the camera'}
+              {activePanel === 'detection' && 'Identify objects in your environment'}
+              {activePanel === 'navigation' && 'Get directions and location information'}
+              {activePanel === 'voice' && 'Control the app with your voice'}
+              {activePanel === 'emergency' && 'Quick access to emergency services'}
+            </p>
           </div>
           
-          {/* Quick Actions */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <LuxuryButton
-              onClick={() => {
-                setCameraEnabled(!cameraEnabled)
-                setActivePanel('webcam')
-                speak(cameraEnabled ? 'Camera disabled' : 'Camera enabled')
-              }}
-              className={`flex items-center justify-center space-x-2 ${cameraEnabled ? 'bg-green-600 hover:bg-green-700' : ''}`}
-              disabled={systemStatus.camera === 'offline'}
-              aria-label={cameraEnabled ? 'Disable camera' : 'Enable camera'}
-            >
-              {cameraEnabled ? <Camera className="w-5 h-5" /> : <CameraOff className="w-5 h-5" />}
-              <span className="hidden md:inline">{cameraEnabled ? 'Disable Camera' : 'Enable Camera'}</span>
-            </LuxuryButton>
-
-            <LuxuryButton
-              onClick={() => {
-                setActivePanel('navigation')
-                speak('Navigation panel opened')
-              }}
-              className="flex items-center justify-center space-x-2"
-              aria-label="Open navigation"
-            >
-              <Navigation className="w-5 h-5" />
-              <span className="hidden md:inline">Navigate</span>
-            </LuxuryButton>
-
-            <LuxuryButton
-              onClick={() => {
-                setActivePanel('detection')
-                speak('Object detection panel opened')
-              }}
-              className="flex items-center justify-center space-x-2"
-              aria-label="Object detection"
-            >
-              <Eye className="w-5 h-5" />
-              <span className="hidden md:inline">Detect Objects</span>
-            </LuxuryButton>
-
-            <LuxuryButton
-              onClick={() => {
-                setActivePanel('emergency')
-                speak('Emergency panel activated')
-              }}
-              className="bg-red-600 hover:bg-red-700 flex items-center justify-center space-x-2"
-              aria-label="Emergency assistance"
-            >
-              <AlertTriangle className="w-5 h-5" />
-              <span className="hidden md:inline">Emergency</span>
-            </LuxuryButton>
-          </div>
-
-          {/* Main Panel */}
-          <motion.div
-            key={activePanel}
-            variants={panelVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{ duration: 0.5 }}
-            className="mb-8"
-          >
-            {activePanel === 'webcam' && (
-              <LuxuryCard className="p-6" variant="elevated">
-                <h2 className="text-2xl font-serif font-bold mb-4 flex items-center">
-                  <Camera className="w-6 h-6 mr-2 text-primary-600" />
-                  Live Camera Feed
-                </h2>
-                <WebcamFeed 
-                  enabled={cameraEnabled}
-                  onDetection={(objects) => {
-                    // Only announce significant objects with high confidence
-                    const significantObjects = objects.filter(obj => obj.confidence > 70)
-                    if (significantObjects.length > 0) {
-                      const topObject = significantObjects[0]
-                      speak(`${topObject.label} detected`)
-                    }
-                  }}
-                />
-              </LuxuryCard>
-            )}
-
-            {activePanel === 'voice' && (
-              <LuxuryCard className="p-6" variant="elevated">
-                <h2 className="text-2xl font-serif font-bold mb-4 flex items-center">
-                  <Mic className="w-6 h-6 mr-2 text-primary-600" />
-                  Voice Commands
-                </h2>
-                <VoiceCommandPanel 
-                  onCommand={handleVoiceCommand}
-                  isListening={isListening}
-                  isProcessing={isProcessing}
-                />
-              </LuxuryCard>
-            )}
-
-            {activePanel === 'navigation' && (
-              <LuxuryCard className="p-6" variant="elevated">
-                <h2 className="text-2xl font-serif font-bold mb-4 flex items-center">
-                  <Navigation className="w-6 h-6 mr-2 text-primary-600" />
-                  Navigation
-                </h2>
-                <NavigationPanel 
-                  onLocationFound={(location) => {
-                    speak(`Location found: ${location.address}`)
-                  }}
-                  onDirectionsReady={(directions) => {
-                    speak(`Directions ready. ${directions.length} steps to your destination.`)
-                  }}
-                />
-              </LuxuryCard>
-            )}
-
-            {activePanel === 'detection' && (
-              <LuxuryCard className="p-6" variant="elevated">
-                <h2 className="text-2xl font-serif font-bold mb-4 flex items-center">
-                  <Eye className="w-6 h-6 mr-2 text-primary-600" />
-                  Object Detection
-                </h2>
-                <ObjectDetectionPanel 
-                  cameraEnabled={cameraEnabled}
-                  onObjectDetected={(object) => {
-                    speak(`${object.label} detected`)
-                  }}
-                />
-              </LuxuryCard>
-            )}
-
-            {activePanel === 'emergency' && (
-              <LuxuryCard className="p-6" variant="elevated">
-                <h2 className="text-2xl font-serif font-bold mb-4 flex items-center text-red-600">
-                  <AlertTriangle className="w-6 h-6 mr-2 text-red-600" />
-                  Emergency
-                </h2>
-                <EmergencyPanel 
-                  onEmergencyTriggered={(type) => {
-                    speak(`Emergency ${type} activated. Finding nearest assistance.`)
-                  }}
-                />
-              </LuxuryCard>
-            )}
-          </motion.div>
-
-          {/* Status Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <LuxuryCard className="p-6" variant="glass">
-              <h3 className="text-lg font-medium mb-4">System Status</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Camera</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    systemStatus.camera === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {systemStatus.camera === 'online' ? 'Online' : 'Offline'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Microphone</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    systemStatus.microphone === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {systemStatus.microphone === 'online' ? 'Online' : 'Offline'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Location</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    systemStatus.location === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {systemStatus.location === 'online' ? 'Online' : 'Offline'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-600">AI Services</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    systemStatus.ai === 'online' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                  }`}>
-                    {systemStatus.ai === 'online' ? 'Online' : 'Offline'}
-                  </span>
-                </div>
-              </div>
-            </LuxuryCard>
-
-            <LuxuryCard className="p-6" variant="glass">
-              <h3 className="text-lg font-medium mb-4">Recent Notifications</h3>
-              <div className="space-y-3">
-                {notifications.length > 0 ? (
-                  notifications.map(notification => (
-                    <div key={notification.id} className={`p-3 rounded-lg ${notification.read ? 'bg-slate-50' : 'bg-blue-50'}`}>
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-medium">{notification.title}</h4>
-                        <span className="text-xs text-slate-500">{notification.time}</span>
-                      </div>
-                      <p className="text-sm text-slate-600 mt-1">{notification.message}</p>
+          {/* Panel Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Column - Always show webcam feed if camera is enabled */}
+            <div className={`${activePanel === 'detection' ? 'lg:col-span-8' : 'lg:col-span-12'}`}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activePanel}
+                  variants={panelVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  className="h-full"
+                >
+                  {/* Webcam Feed Panel */}
+                  {activePanel === 'webcam' && (
+                    <LuxuryCard className="p-6 h-full">
+                      <WebcamFeed 
+                        enabled={cameraEnabled} 
+                        onDetection={(objects) => objects.forEach(handleObjectDetected)}
+                      />
+                    </LuxuryCard>
+                  )}
+                  
+                  {/* Object Detection Panel */}
+                  {activePanel === 'detection' && (
+                    <div className="grid grid-cols-1 gap-6 h-full">
+                      <LuxuryCard className="p-6">
+                        <WebcamFeed 
+                          enabled={cameraEnabled} 
+                          onDetection={(objects) => objects.forEach(handleObjectDetected)}
+                        />
+                      </LuxuryCard>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-slate-500 text-sm">No new notifications</p>
-                )}
+                  )}
+                  
+                  {/* Navigation Panel */}
+                  {activePanel === 'navigation' && (
+                    <LuxuryCard className="p-6 h-full">
+                      <NavigationPanel />
+                    </LuxuryCard>
+                  )}
+                  
+                  {/* Voice Command Panel */}
+                  {activePanel === 'voice' && (
+                    <LuxuryCard className="p-6 h-full">
+                      <VoiceCommandPanel onCommand={handleVoiceCommand} />
+                    </LuxuryCard>
+                  )}
+                  
+                  {/* Emergency Panel */}
+                  {activePanel === 'emergency' && (
+                    <LuxuryCard className="p-6 h-full">
+                      <EmergencyPanel />
+                    </LuxuryCard>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+            
+            {/* Right Column - Show object detection controls when in detection mode */}
+            {activePanel === 'detection' && (
+              <div className="lg:col-span-4">
+                <LuxuryCard className="p-6 h-full">
+                  <ObjectDetectionPanel 
+                    cameraEnabled={cameraEnabled}
+                    onObjectDetected={handleObjectDetected}
+                    webcamRef={webcamVideoRef}
+                  />
+                </LuxuryCard>
               </div>
-            </LuxuryCard>
-
-            <LuxuryCard className="p-6" variant="glass">
-              <h3 className="text-lg font-medium mb-4">Quick Tips</h3>
-              <div className="space-y-3">
-                <div className="flex items-start">
-                  <div className="bg-primary-100 p-2 rounded-full mr-3">
-                    <Mic className="w-4 h-4 text-primary-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-sm">Voice Commands</h4>
-                    <p className="text-xs text-slate-600">Say "Navigate to [location]" for directions</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="bg-primary-100 p-2 rounded-full mr-3">
-                    <Eye className="w-4 h-4 text-primary-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-sm">Object Detection</h4>
-                    <p className="text-xs text-slate-600">Say "What's in front of me?" to scan surroundings</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <div className="bg-primary-100 p-2 rounded-full mr-3">
-                    <AlertTriangle className="w-4 h-4 text-primary-600" />
-                  </div>
-                  <div>
-                    <h4 className="font-medium text-sm">Emergency</h4>
-                    <p className="text-xs text-slate-600">Say "Emergency" or press the red button for help</p>
-                  </div>
-                </div>
-              </div>
-            </LuxuryCard>
+            )}
           </div>
-        </div>
-      </main>
-
-      {/* Overlay when sidebar is open on mobile */}
-      {sidebarOpen && isMobile && (
-        <div 
-          className="fixed inset-0 bg-black/20 z-10 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
-
-      {/* Voice Command Indicator */}
-      <AnimatePresence>
-        {isListening && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed bottom-6 right-6 bg-primary-600 text-white p-4 rounded-full shadow-glow z-40"
-          >
-            <Mic className="w-6 h-6 animate-pulse" />
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </main>
+      </div>
     </div>
   )
 } 

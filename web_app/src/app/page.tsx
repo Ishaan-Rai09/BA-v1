@@ -27,9 +27,29 @@ export default function LandingPage() {
   const { highContrast, announceScreenReader } = useAccessibility()
   const [showWelcome, setShowWelcome] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [windowSize, setWindowSize] = useState({ width: 1200, height: 800 })
+  const [particles, setParticles] = useState<Array<{ x: number, y: number, opacity: number }>>([])
 
+  // Initialize window size and particles safely
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setWindowSize({ 
+        width: window.innerWidth, 
+        height: window.innerHeight 
+      })
+      
+      // Generate particles with initial positions
+      const newParticles = Array.from({ length: 20 }, () => ({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        opacity: Math.random() * 0.5 + 0.3
+      }))
+      
+      setParticles(newParticles)
+    }
+    
     setIsLoaded(true)
+    
     // Check if API is available
     fetch('/api/health').catch(() => {
       console.log('API not available')
@@ -39,6 +59,19 @@ export default function LandingPage() {
     setTimeout(() => {
       announceScreenReader('Blind Assistant landing page loaded')
     }, 1000)
+    
+    // Handle window resize
+    const handleResize = () => {
+      if (typeof window !== 'undefined') {
+        setWindowSize({
+          width: window.innerWidth,
+          height: window.innerHeight
+        })
+      }
+    }
+    
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   const handleGetStarted = () => {
@@ -72,30 +105,34 @@ export default function LandingPage() {
         {/* Background Elements */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-luxury-midnight via-luxury-deepBlue to-primary-900 opacity-90"></div>
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('/assets/images/patterns/grid.svg')] opacity-20"></div>
+          <div className="absolute top-0 left-0 w-full h-full bg-[url('/patterns/grid.svg')] opacity-20"></div>
+          
+          {/* Luxury Overlay Elements */}
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-luxury-gold/10 blur-3xl"></div>
+          <div className="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-primary-500/10 blur-3xl"></div>
         </div>
 
         {/* Animated Particles */}
         <div className="absolute inset-0 z-0">
-          {[...Array(20)].map((_, i) => (
+          {particles.map((particle, i) => (
             <motion.div
               key={i}
               className="absolute w-2 h-2 rounded-full bg-white/30"
               initial={{ 
-                x: Math.random() * window.innerWidth, 
-                y: Math.random() * window.innerHeight,
-                opacity: Math.random() * 0.5 + 0.3
+                x: particle.x, 
+                y: particle.y,
+                opacity: particle.opacity
               }}
               animate={{ 
                 x: [
-                  Math.random() * window.innerWidth,
-                  Math.random() * window.innerWidth,
-                  Math.random() * window.innerWidth
+                  particle.x,
+                  particle.x + (Math.random() * 200 - 100),
+                  particle.x
                 ],
                 y: [
-                  Math.random() * window.innerHeight,
-                  Math.random() * window.innerHeight,
-                  Math.random() * window.innerHeight
+                  particle.y,
+                  particle.y + (Math.random() * 200 - 100),
+                  particle.y
                 ]
               }}
               transition={{ 
@@ -198,7 +235,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-white">
+      <section id="features" className="py-24 bg-gradient-to-b from-white to-gray-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4 bg-gradient-to-r from-luxury-midnight to-primary-700 bg-clip-text text-transparent">
@@ -233,6 +270,12 @@ export default function LandingPage() {
                   <span>Multi-language support</span>
                 </li>
               </ul>
+              <LuxuryButton 
+                onClick={() => window.location.href = '/dashboard'}
+                className="w-full bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black"
+              >
+                Try Voice Commands
+              </LuxuryButton>
             </LuxuryCard>
 
             {/* Feature 2 */}
@@ -258,16 +301,22 @@ export default function LandingPage() {
                   <span>Obstacle warnings</span>
                 </li>
               </ul>
+              <LuxuryButton 
+                onClick={() => window.location.href = '/dashboard'}
+                className="w-full bg-gradient-to-r from-luxury-royal to-luxury-midnight text-white"
+              >
+                Try Object Detection
+              </LuxuryButton>
             </LuxuryCard>
 
             {/* Feature 3 */}
             <LuxuryCard variant="gradient" className="p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <div className="bg-gradient-to-br from-luxury-gold to-luxury-darkGold w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-gold">
+              <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-glow">
                 <Navigation className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-serif font-bold mb-3">Navigation</h3>
               <p className="text-slate-600 mb-4">
-                Turn-by-turn navigation with voice guidance to help you reach your destination safely.
+                Intelligent navigation assistance to help you reach your destination safely and efficiently.
               </p>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center">
@@ -276,158 +325,37 @@ export default function LandingPage() {
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Landmark identification</span>
+                  <span>Landmark recognition</span>
                 </li>
                 <li className="flex items-center">
                   <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Public transit integration</span>
+                  <span>Accessible route planning</span>
                 </li>
               </ul>
-            </LuxuryCard>
-
-            {/* Feature 4 */}
-            <LuxuryCard variant="gradient" className="p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <div className="bg-gradient-to-br from-red-500 to-red-700 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-glow">
-                <AlertTriangle className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-2xl font-serif font-bold mb-3">Emergency Services</h3>
-              <p className="text-slate-600 mb-4">
-                Quick access to emergency assistance with location sharing and automated alerts.
-              </p>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>One-touch emergency calls</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Location sharing</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Medical information access</span>
-                </li>
-              </ul>
-            </LuxuryCard>
-
-            {/* Feature 5 */}
-            <LuxuryCard variant="gradient" className="p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <div className="bg-gradient-to-br from-purple-500 to-purple-700 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-glow">
-                <Volume2 className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-2xl font-serif font-bold mb-3">Audio Description</h3>
-              <p className="text-slate-600 mb-4">
-                Rich audio descriptions of your environment and digital content for complete understanding.
-              </p>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Scene descriptions</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Text reading</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Customizable voice settings</span>
-                </li>
-              </ul>
-            </LuxuryCard>
-
-            {/* Feature 6 */}
-            <LuxuryCard variant="gradient" className="p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <div className="bg-gradient-to-br from-green-500 to-green-700 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-glow">
-                <MapPin className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-2xl font-serif font-bold mb-3">Location Services</h3>
-              <p className="text-slate-600 mb-4">
-                Advanced location services to help you find points of interest and navigate your surroundings.
-              </p>
-              <ul className="space-y-2 mb-6">
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Points of interest</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Accessibility information</span>
-                </li>
-                <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Indoor mapping</span>
-                </li>
-              </ul>
+              <LuxuryButton 
+                onClick={() => window.location.href = '/dashboard'}
+                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white"
+              >
+                Try Navigation
+              </LuxuryButton>
             </LuxuryCard>
           </div>
 
+          {/* CTA Button */}
           <div className="mt-16 text-center">
             <LuxuryButton
-              onClick={handleGetStarted}
+              onClick={() => window.location.href = '/dashboard'}
               size="lg"
-              className="bg-gradient-to-r from-primary-600 to-luxury-royal text-white"
+              className="bg-gradient-to-r from-luxury-midnight to-primary-700 text-white group"
             >
-              Experience All Features
+              <span className="flex items-center">
+                Access Dashboard
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </span>
             </LuxuryButton>
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-luxury-midnight via-luxury-deepBlue to-primary-900 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6">
-            Start Your Journey Today
-          </h2>
-          <p className="text-xl text-white/80 max-w-3xl mx-auto mb-10">
-            Join thousands of users who have transformed their daily experience with our premium assistive technology platform.
-          </p>
-          <LuxuryButton
-            onClick={handleGetStarted}
-            size="lg"
-            className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium"
-          >
-            Get Started Now
-          </LuxuryButton>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-6 md:mb-0">
-              <h2 className="text-2xl font-serif font-bold bg-gradient-to-r from-white to-luxury-gold bg-clip-text text-transparent">
-                Blind Assistant
-              </h2>
-              <p className="text-white/70 mt-2">Your luxury assistive technology platform</p>
-            </div>
-            <div className="flex flex-wrap gap-8">
-              <div>
-                <h3 className="font-medium mb-3">Features</h3>
-                <ul className="space-y-2 text-white/70">
-                  <li>Voice Commands</li>
-                  <li>Object Detection</li>
-                  <li>Navigation</li>
-                  <li>Emergency Services</li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-medium mb-3">Support</h3>
-                <ul className="space-y-2 text-white/70">
-                  <li>Documentation</li>
-                  <li>FAQ</li>
-                  <li>Contact Us</li>
-                  <li>Privacy Policy</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="border-t border-white/10 mt-8 pt-8 text-center text-white/50">
-            <p>&copy; {new Date().getFullYear()} Blind Assistant. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }
