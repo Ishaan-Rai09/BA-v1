@@ -30,13 +30,16 @@ export function VoiceProvider({ children }: VoiceProviderProps) {
   const [transcript, setTranscript] = useState('')
   const [confidence, setConfidence] = useState(0)
   const [language, setLanguage] = useState('en-US')
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null)
+  const [recognition, setRecognition] = useState<any>(null)
   const [synthesis, setSynthesis] = useState<SpeechSynthesis | null>(null)
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [speechQueue, setSpeechQueue] = useState<string[]>([])
 
+  // Initialize speech recognition and synthesis
   useEffect(() => {
     // Initialize Speech Recognition
-    if (typeof window !== 'undefined' && 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       const recognitionInstance = new SpeechRecognition()
       
@@ -55,7 +58,7 @@ export function VoiceProvider({ children }: VoiceProviderProps) {
         setIsProcessing(false)
       }
 
-      recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
+      recognitionInstance.onresult = (event: any) => {
         const lastResult = event.results[event.results.length - 1]
         const lastTranscript = lastResult[0].transcript
         const lastConfidence = lastResult[0].confidence
@@ -65,23 +68,16 @@ export function VoiceProvider({ children }: VoiceProviderProps) {
         setIsProcessing(false)
 
         if (lastResult.isFinal) {
-          // Send to backend for processing
           processCommand(lastTranscript)
         }
       }
 
-      recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
+      recognitionInstance.onerror = (event: any) => {
         console.error('Speech recognition error:', event.error)
         setIsListening(false)
         setIsProcessing(false)
         
-        if (event.error === 'not-allowed') {
-          toast.error('Microphone access denied. Please enable microphone permissions.')
-        } else if (event.error === 'network') {
-          toast.error('Network error. Please check your internet connection.')
-        } else {
-          toast.error('Speech recognition error. Please try again.')
-        }
+        toast.error('Speech recognition error. Please try again.')
       }
 
       setRecognition(recognitionInstance)
@@ -92,15 +88,86 @@ export function VoiceProvider({ children }: VoiceProviderProps) {
       const synthInstance = window.speechSynthesis
       setSynthesis(synthInstance)
 
+      // Load voices
       const loadVoices = () => {
         const availableVoices = synthInstance.getVoices()
-        setVoices(availableVoices)
+        if (availableVoices.length > 0) {
+          setVoices(availableVoices)
+        }
       }
 
+      // Try to load voices immediately
       loadVoices()
+      
+      // Also set up the event listener for when voices change/load
       synthInstance.onvoiceschanged = loadVoices
+      
+      // Fix for Chrome bug where speech synthesis gets stuck
+      const resetInterval = setInterval(() => {
+        if (synthInstance.speaking) {
+          synthInstance.cancel()
+          setIsSpeaking(false)
+        }
+      }, 15000)
+
+      return () => {
+        clearInterval(resetInterval)
+        synthInstance.cancel()
+      }
     }
   }, [language])
+
+  // Process speech queue
+  useEffect(() => {
+    if (speechQueue.length > 0 && !isSpeaking && synthesis) {
+      const text = speechQueue[0]
+      setSpeechQueue(prev => prev.slice(1))
+      
+      setIsSpeaking(true)
+      
+      try {
+        // Create utterance
+        const utterance = new SpeechSynthesisUtterance(text)
+        
+        // Find appropriate voice
+        if (voices.length > 0) {
+          const preferredVoice = voices.find(voice => 
+            voice.lang.startsWith(language.split('-')[0])
+          ) || voices[0]
+          
+          utterance.voice = preferredVoice
+        }
+        
+        // Configure utterance
+        utterance.rate = 1.0
+        utterance.pitch = 1.0
+        utterance.volume = 1.0
+        
+        // Handle events
+        utterance.onend = () => {
+          setIsSpeaking(false)
+        }
+        
+        utterance.onerror = () => {
+          console.error('Speech synthesis error')
+          setIsSpeaking(false)
+          toast(text, { duration: 5000 })
+        }
+        
+        // Cancel any ongoing speech
+        synthesis.cancel()
+        
+        // Speak with timeout to prevent Chrome bug
+        setTimeout(() => {
+          synthesis.speak(utterance)
+        }, 50)
+      } catch (error) {
+        console.error('Error in speech synthesis:', error)
+        setIsSpeaking(false)
+        toast(text, { duration: 5000 })
+      }
+    }
+  }, [speechQueue, isSpeaking, synthesis, voices, language])
 
   const processCommand = async (command: string) => {
     try {
@@ -120,7 +187,7 @@ export function VoiceProvider({ children }: VoiceProviderProps) {
       if (data.success) {
         // Handle successful command processing
         if (data.response) {
-          await speak(data.response)
+          speak(data.response)
         }
         
         if (data.action) {
@@ -164,41 +231,15 @@ export function VoiceProvider({ children }: VoiceProviderProps) {
     }
   }, [recognition])
 
-  const speak = useCallback(async (text: string): Promise<void> => {
-    if (!isEnabled || !synthesis) {
-      return
+  const speak = useCallback((text: string): Promise<void> => {
+    if (!text || !isEnabled) {
+      return Promise.resolve()
     }
-
-    // Cancel any ongoing speech
-    synthesis.cancel()
-
-    return new Promise((resolve, reject) => {
-      const utterance = new SpeechSynthesisUtterance(text)
-      
-      // Find the best voice for the current language
-      const preferredVoice = voices.find(voice => 
-        voice.lang.startsWith(language.split('-')[0]) && voice.localService
-      ) || voices.find(voice => 
-        voice.lang.startsWith(language.split('-')[0])
-      ) || voices[0]
-
-      if (preferredVoice) {
-        utterance.voice = preferredVoice
-      }
-
-      utterance.rate = 1.0
-      utterance.pitch = 1.0
-      utterance.volume = 1.0
-
-      utterance.onend = () => resolve()
-      utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event.error)
-        reject(new Error(event.error))
-      }
-
-      synthesis.speak(utterance)
-    })
-  }, [isEnabled, synthesis, voices, language])
+    
+    // Add to queue
+    setSpeechQueue(prev => [...prev, text])
+    return Promise.resolve()
+  }, [isEnabled])
 
   const toggleVoice = useCallback(() => {
     setIsEnabled(!isEnabled)
@@ -207,6 +248,8 @@ export function VoiceProvider({ children }: VoiceProviderProps) {
     }
     if (synthesis) {
       synthesis.cancel()
+      setIsSpeaking(false)
+      setSpeechQueue([])
     }
   }, [isEnabled, isListening, stopListening, synthesis])
 

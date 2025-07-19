@@ -81,7 +81,11 @@ export default function Dashboard() {
     { id: 2, title: 'Location Services', message: 'GPS signal improved', time: '1 day ago', read: true }
   ])
   const [detectedObjects, setDetectedObjects] = useState<DetectedObject[]>([])
-  const webcamVideoRef = useRef<HTMLVideoElement | null>(null)
+  
+  // Create a ref for the webcam video element
+  const webcamRef = useRef<HTMLVideoElement | null>(null)
+  // Create a ref for the WebcamFeed component
+  const webcamFeedRef = useRef<any>(null)
 
   useEffect(() => {
     // Check if mobile
@@ -183,6 +187,11 @@ export default function Dashboard() {
       const updated = [object, ...prev].slice(0, 10)
       return updated
     })
+  }
+
+  // Function to get webcam video element from WebcamFeed component
+  const setWebcamVideoRef = (videoElement: HTMLVideoElement | null) => {
+    webcamRef.current = videoElement;
   }
 
   const panelVariants = {
@@ -473,6 +482,8 @@ export default function Dashboard() {
                       <WebcamFeed 
                         enabled={cameraEnabled} 
                         onDetection={(objects) => objects.forEach(handleObjectDetected)}
+                        onVideoRef={setWebcamVideoRef}
+                        ref={webcamFeedRef}
                       />
                     </LuxuryCard>
                   )}
@@ -484,6 +495,8 @@ export default function Dashboard() {
                         <WebcamFeed 
                           enabled={cameraEnabled} 
                           onDetection={(objects) => objects.forEach(handleObjectDetected)}
+                          onVideoRef={setWebcamVideoRef}
+                          ref={webcamFeedRef}
                         />
                       </LuxuryCard>
                     </div>
@@ -520,7 +533,7 @@ export default function Dashboard() {
                   <ObjectDetectionPanel 
                     cameraEnabled={cameraEnabled}
                     onObjectDetected={handleObjectDetected}
-                    webcamRef={webcamVideoRef}
+                    webcamRef={webcamRef.current}
                   />
                 </LuxuryCard>
               </div>

@@ -5,7 +5,6 @@ import './globals.css'
 import { VoiceProvider } from '@/contexts/VoiceContext'
 import { AccessibilityProvider } from '@/contexts/AccessibilityContext'
 import { ToastProvider } from '@/components/ui/ToastProvider'
-import { SkipToContent } from '@/components/accessibility/SkipToContent'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -124,7 +123,6 @@ export default function RootLayout({
           <AccessibilityProvider>
             <VoiceProvider>
               <ToastProvider />
-              <SkipToContent />
               
               {/* Main App Container */}
               <div className="relative min-h-screen">

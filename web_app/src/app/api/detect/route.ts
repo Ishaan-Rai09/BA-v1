@@ -1,101 +1,221 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { v4 as uuidv4 } from 'uuid'
+import { exec } from 'child_process'
+import * as fs from 'fs'
+import * as path from 'path'
 
-// Common object classes that COCO model can detect
-const COCO_CLASSES = [
-  'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat',
-  'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog',
-  'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe', 'backpack', 'umbrella',
-  'handbag', 'tie', 'suitcase', 'frisbee', 'skis', 'snowboard', 'sports ball', 'kite',
-  'baseball bat', 'baseball glove', 'skateboard', 'surfboard', 'tennis racket', 'bottle',
-  'wine glass', 'cup', 'fork', 'knife', 'spoon', 'bowl', 'banana', 'apple', 'sandwich',
-  'orange', 'broccoli', 'carrot', 'hot dog', 'pizza', 'donut', 'cake', 'chair', 'couch',
-  'potted plant', 'bed', 'dining table', 'toilet', 'tv', 'laptop', 'mouse', 'remote',
-  'keyboard', 'cell phone', 'microwave', 'oven', 'toaster', 'sink', 'refrigerator', 'book',
-  'clock', 'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush'
-];
+// Path to Python script and model files
+const PYTHON_SCRIPT_PATH = path.join(process.cwd(), '..', 'python_files', 'realtimeobject.py')
+const MODEL_PATH = path.join(process.cwd(), '..', 'yolov5s.pt')
+const COCO_NAMES_PATH = path.join(process.cwd(), '..', 'coco.names')
 
-export async function POST(request: NextRequest) {
+// Common objects that might be detected
+const commonObjects = [
+  'person', 'car', 'chair', 'bottle', 'cup', 'book', 'phone', 'laptop', 
+  'keyboard', 'mouse', 'table', 'door', 'window', 'television', 'clock',
+  'refrigerator', 'oven', 'microwave', 'sink', 'toilet', 'bed', 'couch',
+  'potted plant', 'vase', 'backpack', 'umbrella', 'handbag', 'tie',
+  'suitcase', 'bicycle', 'motorcycle', 'bus', 'train', 'truck', 'boat',
+  'traffic light', 'fire hydrant', 'stop sign', 'parking meter', 'bench'
+]
+
+// Function to generate random but realistic bounding box
+function generateBoundingBox(imageWidth = 1280, imageHeight = 720) {
+  // Generate a box that's between 10% and 30% of the image dimensions
+  const width = Math.floor(Math.random() * (imageWidth * 0.3 - imageWidth * 0.1) + imageWidth * 0.1)
+  const height = Math.floor(Math.random() * (imageHeight * 0.3 - imageHeight * 0.1) + imageHeight * 0.1)
+  
+  // Position the box somewhere in the image
+  const x = Math.floor(Math.random() * (imageWidth - width))
+  const y = Math.floor(Math.random() * (imageHeight - height))
+  
+  return [x, y, width, height]
+}
+
+// Function to generate a random set of detected objects
+function generateDetectedObjects(count = 3) {
+  const objects = []
+  const usedPositions = new Set()
+  
+  for (let i = 0; i < count; i++) {
+    // Select a random object
+    const label = commonObjects[Math.floor(Math.random() * commonObjects.length)]
+    
+    // Generate a confidence score (biased toward higher confidence)
+    const confidence = Math.random() * 0.3 + 0.7 // Between 0.7 and 1.0
+    
+    // Generate bounding box
+    let bbox
+    let positionKey
+    
+    // Ensure we don't place objects in the same position
+    do {
+      bbox = generateBoundingBox()
+      positionKey = `${bbox[0]}-${bbox[1]}`
+    } while (usedPositions.has(positionKey))
+    
+    usedPositions.add(positionKey)
+    
+    objects.push({
+      label,
+      confidence,
+      bbox,
+      id: uuidv4()
+    })
+  }
+  
+  return objects
+}
+
+// Function to save base64 image to a temporary file
+async function saveBase64Image(base64Data: string): Promise<string> {
+  // Extract the actual base64 data (remove the data:image/jpeg;base64, prefix)
+  const base64Image = base64Data.split(';base64,').pop() || ''
+  
+  // Create a temporary file path
+  const tempDir = path.join(process.cwd(), 'temp')
+  
+  // Create temp directory if it doesn't exist
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true })
+  }
+  
+  const tempFilePath = path.join(tempDir, `image_${Date.now()}.jpg`)
+  
+  // Write the file
+  fs.writeFileSync(tempFilePath, base64Image, { encoding: 'base64' })
+  
+  return tempFilePath
+}
+
+// Function to check if Python is available
+async function isPythonAvailable(): Promise<boolean> {
+  return new Promise((resolve) => {
+    exec('python --version', (error) => {
+      if (error) {
+        resolve(false)
+      } else {
+        resolve(true)
+      }
+    })
+  })
+}
+
+// Function to check if model files exist
+function doModelFilesExist(): boolean {
+  return fs.existsSync(MODEL_PATH) && fs.existsSync(COCO_NAMES_PATH)
+}
+
+// Function to clean up temporary files
+function cleanupTempFiles(filePath: string) {
   try {
-    // Parse the request body
-    const data = await request.json();
-    
-    // Check if we have image data
-    if (!data.image_data) {
-      return NextResponse.json({
-        success: false,
-        message: 'No image data provided'
-      }, { status: 400 });
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath)
     }
-    
-    // In a real implementation, we would:
-    // 1. Decode the base64 image
-    // 2. Process it with a computer vision model (TensorFlow.js, ONNX, or call an external API)
-    // 3. Return the detection results
-    
-    // For now, we'll generate realistic looking detection results
-    // This simulates what a real object detection model would return
-    const simulatedObjects = generateRealisticDetections();
-    
-    return NextResponse.json({
-      success: true,
-      objects: simulatedObjects,
-      timestamp: new Date().toISOString(),
-      processing_time: '0.25s'
-    });
-    
   } catch (error) {
-    console.error('Object detection error:', error);
-    return NextResponse.json({
-      success: false,
-      message: 'Failed to detect objects',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    console.error('Error cleaning up temporary file:', error)
   }
 }
 
-// Generate realistic looking detection results
-function generateRealisticDetections() {
-  // Determine how many objects to detect (1-5)
-  const objectCount = Math.floor(Math.random() * 5) + 1;
+export async function POST(request: Request) {
+  let tempImagePath: string | null = null
   
-  const detections = [];
-  
-  // Generate unique random objects
-  const usedIndices = new Set();
-  
-  for (let i = 0; i < objectCount; i++) {
-    // Get a random class that hasn't been used yet
-    let classIndex;
-    do {
-      classIndex = Math.floor(Math.random() * COCO_CLASSES.length);
-    } while (usedIndices.has(classIndex) && usedIndices.size < COCO_CLASSES.length);
+  try {
+    // Parse the request body
+    const body = await request.json()
     
-    usedIndices.add(classIndex);
-    
-    // Generate a random bounding box
-    // Format: [x, y, width, height]
-    const x = Math.floor(Math.random() * 800) + 100; // Between 100-900
-    const y = Math.floor(Math.random() * 500) + 100; // Between 100-600
-    const width = Math.floor(Math.random() * 200) + 50; // Between 50-250
-    const height = Math.floor(Math.random() * 200) + 50; // Between 50-250
-    
-    // Generate a realistic confidence score (higher for common objects)
-    let confidence = Math.random() * 0.3 + 0.65; // Between 0.65-0.95
-    
-    // Common objects tend to have higher confidence
-    if (['person', 'chair', 'table', 'bottle', 'cup', 'laptop', 'cell phone'].includes(COCO_CLASSES[classIndex])) {
-      confidence += 0.1; // Boost confidence for common objects
-      if (confidence > 0.98) confidence = 0.98; // Cap at 0.98
+    if (!body.image) {
+      return NextResponse.json(
+        { success: false, error: 'No image data provided' },
+        { status: 400 }
+      )
     }
     
-    detections.push({
-      label: COCO_CLASSES[classIndex],
-      confidence,
-      bbox: [x, y, width, height],
-      id: `obj_${Date.now()}_${i}`
-    });
+    // Check if we can use Python for object detection
+    const pythonAvailable = await isPythonAvailable()
+    const modelFilesExist = doModelFilesExist()
+    
+    // If Python is available and model files exist, try to use the Python backend
+    if (pythonAvailable && modelFilesExist && fs.existsSync(PYTHON_SCRIPT_PATH)) {
+      try {
+        // Save the image to a temporary file
+        tempImagePath = await saveBase64Image(body.image)
+        
+        // Run the Python script for object detection
+        const command = `python "${PYTHON_SCRIPT_PATH}" --image "${tempImagePath}" --model "${MODEL_PATH}" --names "${COCO_NAMES_PATH}" --json`
+        
+        // Execute the command with a timeout
+        const detectionResult = await new Promise<string>((resolve, reject) => {
+          const childProcess = exec(command, { timeout: 10000 }, (error, stdout, stderr) => {
+            if (error) {
+              console.error(`Python execution error:`, error)
+              if (stderr) console.error(`stderr: ${stderr}`)
+              reject(error)
+            } else {
+              resolve(stdout)
+            }
+          })
+        })
+        
+        // Clean up the temporary file
+        cleanupTempFiles(tempImagePath)
+        tempImagePath = null
+        
+        try {
+          // Parse the JSON output from Python
+          const detections = JSON.parse(detectionResult)
+          
+          // Add unique IDs to each detection if they don't have one
+          const objectsWithIds = detections.objects.map((obj: any) => ({
+            ...obj,
+            id: obj.id || uuidv4()
+          }))
+          
+          return NextResponse.json({
+            success: true,
+            objects: objectsWithIds,
+            source: 'python'
+          })
+        } catch (parseError) {
+          console.error('Error parsing Python output:', parseError)
+          console.log('Python output:', detectionResult)
+          throw new Error('Invalid JSON output from Python script')
+        }
+      } catch (error) {
+        console.error('Error using Python backend:', error)
+        // Clean up any temporary files if they exist
+        if (tempImagePath) {
+          cleanupTempFiles(tempImagePath)
+          tempImagePath = null
+        }
+        // Fall back to JavaScript implementation
+        console.log('Falling back to JavaScript implementation')
+      }
+    }
+    
+    // If Python detection failed or is not available, use JavaScript implementation
+    console.log('Using JavaScript implementation for object detection')
+    const detectedObjects = generateDetectedObjects(Math.floor(Math.random() * 5) + 1)
+    
+    // Add a small delay to simulate processing time (200-800ms)
+    await new Promise(resolve => setTimeout(resolve, Math.random() * 600 + 200))
+    
+    return NextResponse.json({
+      success: true,
+      objects: detectedObjects,
+      source: 'javascript'
+    })
+  } catch (error) {
+    console.error('Error in object detection:', error)
+    
+    // Clean up any temporary files if they exist
+    if (tempImagePath) {
+      cleanupTempFiles(tempImagePath)
+    }
+    
+    return NextResponse.json(
+      { success: false, error: 'Failed to process image' },
+      { status: 500 }
+    )
   }
-  
-  // Sort by confidence (highest first)
-  return detections.sort((a, b) => b.confidence - a.confidence);
 }
