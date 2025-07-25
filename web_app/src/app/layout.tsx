@@ -1,4 +1,4 @@
-// import { ClerkProvider } from '@clerk/nextjs'
+import { ClerkProvider } from '@clerk/nextjs'
 import { Inter, Playfair_Display, JetBrains_Mono } from 'next/font/google'
 import { Metadata } from 'next'
 import './globals.css'
@@ -36,16 +36,6 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#0ea5e9' },
-    { media: '(prefers-color-scheme: dark)', color: '#075985' },
-  ],
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
@@ -78,6 +68,17 @@ export const metadata: Metadata = {
   },
 }
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#0ea5e9' },
+    { media: '(prefers-color-scheme: dark)', color: '#075985' },
+  ],
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -101,25 +102,27 @@ export default function RootLayout({
         className="font-sans bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen antialiased"
         suppressHydrationWarning={true}
       >
-        {/* <ClerkProvider 
+        <ClerkProvider 
           appearance={{
-            baseTheme: 'dark',
+            baseTheme: 'light',
             variables: {
               colorPrimary: '#0ea5e9',
-              colorBackground: '#0f172a',
-              colorText: '#f1f5f9',
+              colorBackground: '#ffffff',
+              colorText: '#1e293b',
+              colorInputBackground: '#f8fafc',
+              colorInputText: '#1e293b',
             },
             elements: {
-              card: 'bg-slate-900/95 backdrop-blur-sm border-slate-700/50 shadow-luxury',
-              headerTitle: 'text-white font-serif text-2xl',
-              headerSubtitle: 'text-slate-300',
-              socialButtonsBlockButton: 'bg-white/10 border-white/20 text-white hover:bg-white/20 transition-all duration-300',
-              formButtonPrimary: 'bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105',
-              formFieldInput: 'bg-white/5 border-white/10 text-white placeholder-slate-400 rounded-xl py-3 px-4 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20',
-              footerActionLink: 'text-primary-400 hover:text-primary-300 transition-colors duration-300',
+              card: 'bg-white/95 backdrop-blur-sm border-slate-200/50 shadow-luxury rounded-3xl',
+              headerTitle: 'text-slate-900 font-serif text-2xl font-bold',
+              headerSubtitle: 'text-slate-600',
+              socialButtonsBlockButton: 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 transition-all duration-300 rounded-xl',
+              formButtonPrimary: 'bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-gold',
+              formFieldInput: 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-500 rounded-xl py-3 px-4 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20',
+              footerActionLink: 'text-primary-600 hover:text-primary-700 transition-colors duration-300 font-medium',
             },
           }}
-        > */}
+        >
           <AccessibilityProvider>
             <VoiceProvider>
               <ToastProvider />
@@ -141,7 +144,7 @@ export default function RootLayout({
               </div>
             </VoiceProvider>
           </AccessibilityProvider>
-        {/* </ClerkProvider> */}
+        </ClerkProvider>
       </body>
     </html>
   )

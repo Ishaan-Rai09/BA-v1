@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
+import { useAuth, SignInButton } from '@clerk/nextjs'
 import { 
   Mic, 
   Camera, 
@@ -9,12 +11,23 @@ import {
   AlertTriangle,
   Eye,
   ArrowRight,
+  ChevronDown,
   ChevronRight,
   Shield,
   MapPin,
   Volume2,
   Star,
-  CheckCircle
+  CheckCircle,
+  Sparkles,
+  Zap,
+  Heart,
+  Globe,
+  Users,
+  Award,
+  Play,
+  Brain,
+  Headphones,
+  Compass
 } from 'lucide-react'
 import { useVoice } from '@/contexts/VoiceContext'
 import { useAccessibility } from '@/contexts/AccessibilityContext'
@@ -24,31 +37,37 @@ import { WelcomeModal } from '@/components/common/ui/WelcomeModal'
 
 export default function LandingPage() {
   const { speak } = useVoice()
-  const { highContrast, announceScreenReader } = useAccessibility()
+  const { announceScreenReader } = useAccessibility()
+  const { isSignedIn, isLoaded: authLoaded } = useAuth()
+  const router = useRouter()
   const [showWelcome, setShowWelcome] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
-  const [windowSize, setWindowSize] = useState({ width: 1200, height: 800 })
-  const [particles, setParticles] = useState<Array<{ x: number, y: number, opacity: number }>>([])
+  const [activeFeature, setActiveFeature] = useState(0)
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
 
-  // Initialize window size and particles safely
+  // Redirect to dashboard if already signed in
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setWindowSize({ 
-        width: window.innerWidth, 
-        height: window.innerHeight 
-      })
-      
-      // Generate particles with initial positions
-      const newParticles = Array.from({ length: 20 }, () => ({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        opacity: Math.random() * 0.5 + 0.3
-      }))
-      
-      setParticles(newParticles)
+    if (authLoaded && isSignedIn) {
+      router.push('/dashboard')
     }
-    
+  }, [authLoaded, isSignedIn, router])
+
+  // Initialize animations and mouse tracking
+  useEffect(() => {
     setIsLoaded(true)
+    
+    // Auto-rotate features
+    const interval = setInterval(() => {
+      setActiveFeature(prev => (prev + 1) % 3)
+    }, 4000)
+    
+    // Mouse tracking for parallax effect
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100
+      })
+    }
     
     // Check if API is available
     fetch('/api/health').catch(() => {
@@ -60,23 +79,21 @@ export default function LandingPage() {
       announceScreenReader('Blind Assistant landing page loaded')
     }, 1000)
     
-    // Handle window resize
-    const handleResize = () => {
-      if (typeof window !== 'undefined') {
-        setWindowSize({
-          width: window.innerWidth,
-          height: window.innerHeight
-        })
-      }
-    }
+    window.addEventListener('mousemove', handleMouseMove)
     
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('mousemove', handleMouseMove)
+    }
   }, [])
 
   const handleGetStarted = () => {
-    setShowWelcome(true)
-    speak('Welcome to Blind Assistant')
+    if (isSignedIn) {
+      router.push('/dashboard')
+    } else {
+      setShowWelcome(true)
+      speak('Please sign in to access Blind Assistant')
+    }
   }
 
   const scrollToSection = (id: string) => {
@@ -87,62 +104,94 @@ export default function LandingPage() {
     }
   }
 
+  const features = [
+    {
+      icon: Brain,
+      title: "AI-Powered Vision",
+      description: "Advanced computer vision that understands your world",
+      color: "from-purple-500 to-pink-500"
+    },
+    {
+      icon: Headphones,
+      title: "Voice Intelligence",
+      description: "Natural conversation with smart voice recognition",
+      color: "from-blue-500 to-cyan-500"
+    },
+    {
+      icon: Compass,
+      title: "Smart Navigation", 
+      description: "Intelligent guidance that adapts to your journey",
+      color: "from-emerald-500 to-teal-500"
+    }
+  ]
+
   return (
-    <div className={`min-h-screen ${highContrast ? 'high-contrast' : ''}`}>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden">
       {/* Welcome Modal */}
-      {showWelcome && (
-        <WelcomeModal 
-          onClose={() => setShowWelcome(false)}
-          onComplete={() => {
-            setShowWelcome(false)
-            window.location.href = '/dashboard'
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {showWelcome && (
+          <WelcomeModal 
+            onClose={() => setShowWelcome(false)}
+            onComplete={() => {
+              setShowWelcome(false)
+              router.push('/dashboard')
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-luxury-midnight via-luxury-deepBlue to-primary-900 opacity-90"></div>
-          <div className="absolute top-0 left-0 w-full h-full bg-[url('/patterns/grid.svg')] opacity-20"></div>
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Animated Background */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-teal-900/20"></div>
           
-          {/* Luxury Overlay Elements */}
-          <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-luxury-gold/10 blur-3xl"></div>
-          <div className="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-primary-500/10 blur-3xl"></div>
+          {/* Floating Orbs */}
+          <motion.div
+            className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-purple-400/30 to-pink-400/30 rounded-full blur-3xl"
+            animate={{
+              x: [0, 100, 0],
+              y: [0, -50, 0],
+              scale: [1, 1.2, 1]
+            }}
+            transition={{
+              duration: 8,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          
+          <motion.div
+            className="absolute bottom-20 right-20 w-96 h-96 bg-gradient-to-r from-blue-400/30 to-cyan-400/30 rounded-full blur-3xl"
+            animate={{
+              x: [0, -80, 0],
+              y: [0, 60, 0],
+              scale: [1.2, 1, 1.2]
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          
+          <motion.div
+            className="absolute top-1/2 left-1/2 w-64 h-64 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-full blur-2xl"
+            animate={{
+              x: [0, 120, -60, 0],
+              y: [0, -80, 40, 0],
+              rotate: [0, 180, 360]
+            }}
+            transition={{
+              duration: 12,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
         </div>
 
-        {/* Animated Particles */}
-        <div className="absolute inset-0 z-0">
-          {particles.map((particle, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-2 h-2 rounded-full bg-white/30"
-              initial={{ 
-                x: particle.x, 
-                y: particle.y,
-                opacity: particle.opacity
-              }}
-              animate={{ 
-                x: [
-                  particle.x,
-                  particle.x + (Math.random() * 200 - 100),
-                  particle.x
-                ],
-                y: [
-                  particle.y,
-                  particle.y + (Math.random() * 200 - 100),
-                  particle.y
-                ]
-              }}
-              transition={{ 
-                duration: 15 + Math.random() * 20,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-            />
-          ))}
-        </div>
+        {/* Grid Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:50px_50px] opacity-20"></div>
 
         {/* Hero Content */}
         <div className="container mx-auto px-4 relative z-10">
@@ -173,16 +222,30 @@ export default function LandingPage() {
               transition={{ duration: 0.8, delay: 1 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              <LuxuryButton
-                onClick={handleGetStarted}
-                size="lg"
-                className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium group"
-              >
-                <span className="flex items-center">
-                  Get Started
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </span>
-              </LuxuryButton>
+              {isSignedIn ? (
+                <LuxuryButton
+                  onClick={() => router.push('/dashboard')}
+                  size="lg"
+                  className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium group"
+                >
+                  <span className="flex items-center">
+                    Go to Dashboard
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </LuxuryButton>
+              ) : (
+                <SignInButton mode="modal">
+                  <LuxuryButton
+                    size="lg"
+                    className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium group"
+                  >
+                    <span className="flex items-center">
+                      Get Started
+                      <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </LuxuryButton>
+                </SignInButton>
+              )}
 
               <LuxuryButton
                 onClick={() => scrollToSection('features')}
@@ -270,12 +333,22 @@ export default function LandingPage() {
                   <span>Multi-language support</span>
                 </li>
               </ul>
-              <LuxuryButton 
-                onClick={() => window.location.href = '/dashboard'}
-                className="w-full bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black"
-              >
-                Try Voice Commands
-              </LuxuryButton>
+              {isSignedIn ? (
+                <LuxuryButton 
+                  onClick={() => router.push('/dashboard')}
+                  className="w-full bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black"
+                >
+                  Try Voice Commands
+                </LuxuryButton>
+              ) : (
+                <SignInButton mode="modal">
+                  <LuxuryButton 
+                    className="w-full bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black"
+                  >
+                    Try Voice Commands
+                  </LuxuryButton>
+                </SignInButton>
+              )}
             </LuxuryCard>
 
             {/* Feature 2 */}
@@ -301,12 +374,22 @@ export default function LandingPage() {
                   <span>Obstacle warnings</span>
                 </li>
               </ul>
-              <LuxuryButton 
-                onClick={() => window.location.href = '/dashboard'}
-                className="w-full bg-gradient-to-r from-luxury-royal to-luxury-midnight text-white"
-              >
-                Try Object Detection
-              </LuxuryButton>
+              {isSignedIn ? (
+                <LuxuryButton 
+                  onClick={() => router.push('/dashboard')}
+                  className="w-full bg-gradient-to-r from-luxury-royal to-luxury-midnight text-white"
+                >
+                  Try Object Detection
+                </LuxuryButton>
+              ) : (
+                <SignInButton mode="modal">
+                  <LuxuryButton 
+                    className="w-full bg-gradient-to-r from-luxury-royal to-luxury-midnight text-white"
+                  >
+                    Try Object Detection
+                  </LuxuryButton>
+                </SignInButton>
+              )}
             </LuxuryCard>
 
             {/* Feature 3 */}
@@ -332,30 +415,251 @@ export default function LandingPage() {
                   <span>Accessible route planning</span>
                 </li>
               </ul>
-              <LuxuryButton 
-                onClick={() => window.location.href = '/dashboard'}
-                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white"
-              >
-                Try Navigation
-              </LuxuryButton>
+              {isSignedIn ? (
+                <LuxuryButton 
+                  onClick={() => router.push('/dashboard')}
+                  className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white"
+                >
+                  Try Navigation
+                </LuxuryButton>
+              ) : (
+                <SignInButton mode="modal">
+                  <LuxuryButton 
+                    className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white"
+                  >
+                    Try Navigation
+                  </LuxuryButton>
+                </SignInButton>
+              )}
             </LuxuryCard>
           </div>
 
           {/* CTA Button */}
           <div className="mt-16 text-center">
-            <LuxuryButton
-              onClick={() => window.location.href = '/dashboard'}
-              size="lg"
-              className="bg-gradient-to-r from-luxury-midnight to-primary-700 text-white group"
-            >
-              <span className="flex items-center">
-                Access Dashboard
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </LuxuryButton>
+            {isSignedIn ? (
+              <LuxuryButton
+                onClick={() => router.push('/dashboard')}
+                size="lg"
+                className="bg-gradient-to-r from-luxury-midnight to-primary-700 text-white group"
+              >
+                <span className="flex items-center">
+                  Access Dashboard
+                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </LuxuryButton>
+            ) : (
+              <SignInButton mode="modal">
+                <LuxuryButton
+                  size="lg"
+                  className="bg-gradient-to-r from-luxury-midnight to-primary-700 text-white group"
+                >
+                  <span className="flex items-center">
+                    Sign In to Access Dashboard
+                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </span>
+                </LuxuryButton>
+              </SignInButton>
+            )}
           </div>
         </div>
       </section>
+
+      {/* How It Works Section */}
+      <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4 bg-gradient-to-r from-luxury-midnight to-primary-700 bg-clip-text text-transparent">
+              How It Works
+            </h2>
+            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+              Experience seamless assistive technology in three simple steps.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {/* Step 1 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="relative mb-6">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-luxury-gold to-luxury-darkGold rounded-full flex items-center justify-center shadow-gold">
+                  <span className="text-2xl font-bold text-black">1</span>
+                </div>
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center">
+                  <CheckCircle className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-serif font-bold mb-3">Sign Up & Authenticate</h3>
+              <p className="text-slate-600">
+                Create your secure account with our premium authentication system and personalize your accessibility preferences.
+              </p>
+            </motion.div>
+
+            {/* Step 2 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="relative mb-6">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-luxury-royal to-luxury-midnight rounded-full flex items-center justify-center shadow-glow">
+                  <span className="text-2xl font-bold text-white">2</span>
+                </div>
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                  <Eye className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-serif font-bold mb-3">Choose Your Tools</h3>
+              <p className="text-slate-600">
+                Access our suite of AI-powered tools: voice commands, object detection, navigation, and emergency assistance.
+              </p>
+            </motion.div>
+
+            {/* Step 3 */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <div className="relative mb-6">
+                <div className="w-20 h-20 mx-auto bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-full flex items-center justify-center shadow-glow">
+                  <span className="text-2xl font-bold text-white">3</span>
+                </div>
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-luxury-gold rounded-full flex items-center justify-center">
+                  <Star className="w-4 h-4 text-black" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-serif font-bold mb-3">Experience Freedom</h3>
+              <p className="text-slate-600">
+                Navigate your world with confidence using our advanced assistive technology designed for independence.
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Demo Video or Interactive Preview */}
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 shadow-luxury overflow-hidden"
+            >
+              {/* Background decoration */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-600/20 to-luxury-gold/20 opacity-50" />
+              <div className="absolute top-4 right-4 w-32 h-32 bg-luxury-gold/10 rounded-full blur-2xl" />
+              
+              <div className="relative z-10 text-center">
+                <h3 className="text-3xl font-serif font-bold text-white mb-4">
+                  Ready to Experience Luxury Accessibility?
+                </h3>
+                <p className="text-slate-300 mb-8 max-w-2xl mx-auto">
+                  Join thousands of users who have transformed their daily navigation with our award-winning assistive technology platform.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  {isSignedIn ? (
+                    <LuxuryButton
+                      onClick={() => router.push('/dashboard')}
+                      size="lg"
+                      className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium"
+                    >
+                      <span className="flex items-center">
+                        Launch Dashboard
+                        <ArrowRight className="ml-2 w-5 h-5" />
+                      </span>
+                    </LuxuryButton>
+                  ) : (
+                    <SignInButton mode="modal">
+                      <LuxuryButton
+                        size="lg"
+                        className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium"
+                      >
+                        <span className="flex items-center">
+                          Start Free Trial
+                          <ArrowRight className="ml-2 w-5 h-5" />
+                        </span>
+                      </LuxuryButton>
+                    </SignInButton>
+                  )}
+                  
+                  <LuxuryButton
+                    onClick={() => scrollToSection('features')}
+                    variant="ghost"
+                    size="lg"
+                    className="border border-white/30 text-white hover:bg-white/10"
+                  >
+                    Learn More
+                  </LuxuryButton>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-luxury-midnight text-white py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Brand */}
+            <div className="col-span-1 md:col-span-2">
+              <h3 className="text-2xl font-serif font-bold mb-4 bg-gradient-to-r from-luxury-gold to-luxury-darkGold bg-clip-text text-transparent">
+                Blind Assistant
+              </h3>
+              <p className="text-slate-300 mb-6 max-w-md">
+                Premium assistive technology platform designed to enhance independence and accessibility for visually impaired users worldwide.
+              </p>
+              <div className="flex space-x-4">
+                <div className="flex items-center">
+                  <Shield className="w-5 h-5 mr-2 text-luxury-gold" />
+                  <span className="text-sm text-slate-300">Privacy First</span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="w-5 h-5 mr-2 text-luxury-gold" />
+                  <span className="text-sm text-slate-300">WCAG Compliant</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Features */}
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Features</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-slate-300 hover:text-luxury-gold transition-colors">Voice Commands</a></li>
+                <li><a href="#" className="text-slate-300 hover:text-luxury-gold transition-colors">Object Detection</a></li>
+                <li><a href="#" className="text-slate-300 hover:text-luxury-gold transition-colors">Navigation</a></li>
+                <li><a href="#" className="text-slate-300 hover:text-luxury-gold transition-colors">Emergency Services</a></li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Support</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-slate-300 hover:text-luxury-gold transition-colors">Help Center</a></li>
+                <li><a href="#" className="text-slate-300 hover:text-luxury-gold transition-colors">Accessibility Guide</a></li>
+                <li><a href="#" className="text-slate-300 hover:text-luxury-gold transition-colors">Contact Support</a></li>
+                <li><a href="#" className="text-slate-300 hover:text-luxury-gold transition-colors">Community</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-12 pt-8 border-t border-slate-700 text-center">
+            <p className="text-slate-400">
+              © 2024 Blind Assistant. All rights reserved. Crafted with accessibility and luxury in mind.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
