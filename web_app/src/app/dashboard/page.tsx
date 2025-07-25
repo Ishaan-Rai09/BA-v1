@@ -209,15 +209,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-yellow-50">
       {/* Top Navigation Bar */}
-      <header className="bg-black/20 backdrop-blur-xl border-b border-white/10 shadow-2xl fixed top-0 left-0 right-0 z-30 h-16">
+      <header className="bg-white/90 backdrop-blur-xl border-b border-blue-200 shadow-lg fixed top-0 left-0 right-0 z-30 h-16">
         <div className="h-full flex items-center justify-between px-4">
           {/* Logo and Menu Toggle */}
           <div className="flex items-center">
             <motion.button 
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-xl hover:bg-white/10 mr-3 text-white transition-all duration-200"
+              className="p-2 rounded-xl hover:bg-blue-100 mr-3 text-blue-800 transition-all duration-200"
               aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -236,10 +236,10 @@ export default function Dashboard() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                  <Brain className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-blue-800 flex items-center justify-center">
+                  <Brain className="w-4 h-4 text-yellow-400" />
                 </div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent">
                   Blind Assistant
                 </h1>
               </motion.div>
@@ -250,7 +250,7 @@ export default function Dashboard() {
                   speak('Navigating to landing page')
                   router.push('/')
                 }}
-                className="hidden md:flex items-center space-x-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200 group"
+                className="hidden md:flex items-center space-x-2 px-3 py-2 rounded-xl bg-blue-100 hover:bg-blue-200 text-blue-800 transition-all duration-200 group"
                 aria-label="Back to landing page"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -268,8 +268,8 @@ export default function Dashboard() {
               <motion.div 
                 className={`flex items-center space-x-1 px-2 py-1 rounded-lg ${
                   systemStatus.camera === 'online' 
-                    ? 'bg-emerald-500/20 text-emerald-400' 
-                    : 'bg-red-500/20 text-red-400'
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'bg-yellow-100 text-yellow-700'
                 }`}
                 whileHover={{ scale: 1.05 }}
               >
@@ -280,8 +280,8 @@ export default function Dashboard() {
               <motion.div 
                 className={`flex items-center space-x-1 px-2 py-1 rounded-lg ${
                   systemStatus.microphone === 'online' 
-                    ? 'bg-blue-500/20 text-blue-400' 
-                    : 'bg-red-500/20 text-red-400'
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'bg-yellow-100 text-yellow-700'
                 }`}
                 whileHover={{ scale: 1.05 }}
               >
@@ -292,8 +292,8 @@ export default function Dashboard() {
               <motion.div 
                 className={`flex items-center space-x-1 px-2 py-1 rounded-lg ${
                   systemStatus.ai === 'online' 
-                    ? 'bg-purple-500/20 text-purple-400' 
-                    : 'bg-red-500/20 text-red-400'
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'bg-yellow-100 text-yellow-700'
                 }`}
                 whileHover={{ scale: 1.05 }}
               >
@@ -313,8 +313,8 @@ export default function Dashboard() {
               }}
               className={`relative px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
                 isListening 
-                  ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg shadow-red-500/25' 
-                  : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-blue-500/25'
+                  ? 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-blue-900 shadow-md shadow-yellow-300/25' 
+                  : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-300/25'
               }`}
               disabled={systemStatus.microphone === 'offline'}
               aria-label={isListening ? 'Stop voice command' : 'Start voice command'}
@@ -344,8 +344,8 @@ export default function Dashboard() {
               onClick={() => setCameraEnabled(!cameraEnabled)}
               className={`relative px-4 py-2 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 ${
                 cameraEnabled 
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/25' 
-                  : 'bg-gradient-to-r from-slate-600 to-slate-700 text-white shadow-lg shadow-slate-500/25'
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-300/25' 
+                  : 'bg-gradient-to-r from-yellow-400 to-yellow-500 text-blue-900 shadow-md shadow-yellow-300/25'
               }`}
               disabled={systemStatus.camera === 'offline'}
               aria-label={cameraEnabled ? 'Turn off camera' : 'Turn on camera'}
@@ -374,29 +374,29 @@ export default function Dashboard() {
             <div className="relative ml-2">
               <div className="relative group">
                 <motion.button 
-                  className="flex items-center space-x-2 p-1 rounded-xl hover:bg-white/10 transition-all duration-200"
+                  className="flex items-center space-x-2 p-1 rounded-xl hover:bg-blue-100 transition-all duration-200"
                   aria-label="User menu"
                   whileHover={{ scale: 1.05 }}
                 >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold shadow-lg">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold shadow-md">
                     {user?.firstName?.[0] || user?.emailAddresses?.[0]?.emailAddress?.[0]?.toUpperCase() || 'U'}
                   </div>
                 </motion.button>
                 
                 {/* User Menu Dropdown */}
-                <div className="absolute right-0 top-full mt-2 w-52 bg-black/80 backdrop-blur-xl rounded-xl shadow-2xl border border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="p-4 border-b border-white/10">
-                    <p className="text-sm font-bold text-white">
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white backdrop-blur-xl rounded-xl shadow-lg border border-blue-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="p-4 border-b border-blue-100">
+                    <p className="text-sm font-bold text-blue-900">
                       {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'User'}
                     </p>
-                    <p className="text-xs text-white/60">
+                    <p className="text-xs text-blue-600">
                       {user?.emailAddresses?.[0]?.emailAddress || 'No email'}
                     </p>
                   </div>
                   <div className="p-2">
-                    <SignOutButton>
+                    <SignOutButton signOutCallback={() => router.push('/')}>
                       <motion.button 
-                        className="flex items-center w-full p-3 text-sm text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-200"
+                        className="flex items-center w-full p-3 text-sm text-blue-700 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-all duration-200"
                         whileHover={{ scale: 1.02 }}
                       >
                         <LogOut className="w-4 h-4 mr-3" />
@@ -420,7 +420,7 @@ export default function Dashboard() {
               initial={{ width: 0, opacity: 0 }}
               animate={{ width: 280, opacity: 1 }}
               exit={{ width: 0, opacity: 0 }}
-              className="bg-black/20 backdrop-blur-xl border-r border-white/10 h-full fixed left-0 top-16 z-20 overflow-y-auto"
+              className="bg-blue-900/90 backdrop-blur-xl border-r border-blue-700 h-full fixed left-0 top-16 z-20 overflow-y-auto"
             >
               <div className="p-6">
                 {/* Back to Home Button for Mobile */}
@@ -430,11 +430,11 @@ export default function Dashboard() {
                     router.push('/')
                     setSidebarOpen(false)
                   }}
-                  className="flex items-center w-full p-4 rounded-xl transition-all duration-200 group text-white/70 hover:text-white hover:bg-white/10 mb-4 md:hidden"
+                  className="flex items-center w-full p-4 rounded-xl transition-all duration-200 group text-white hover:text-white hover:bg-blue-800/30 mb-4 md:hidden"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <div className="p-2 rounded-lg mr-3 bg-white/10 group-hover:bg-white/20">
+                  <div className="p-2 rounded-lg mr-3 bg-blue-800/30 group-hover:bg-blue-700/40">
                     <Home className="w-5 h-5" />
                   </div>
                   <span className="font-medium">Back to Home</span>
@@ -449,16 +449,16 @@ export default function Dashboard() {
                     }}
                     className={`flex items-center w-full p-4 rounded-xl transition-all duration-200 group ${
                       activePanel === 'webcam' 
-                        ? 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-400 border border-emerald-500/30' 
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        ? 'bg-gradient-to-r from-blue-500/20 to-blue-700/20 text-blue-300 border border-blue-500/30' 
+                        : 'text-white/70 hover:text-white hover:bg-blue-800/30'
                     }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className={`p-2 rounded-lg mr-3 ${
                       activePanel === 'webcam'
-                        ? 'bg-emerald-500/20'
-                        : 'bg-white/10 group-hover:bg-white/20'
+                        ? 'bg-blue-500/20'
+                        : 'bg-blue-800/30 group-hover:bg-blue-700/30'
                     }`}>
                       <Camera className="w-5 h-5" />
                     </div>
@@ -481,16 +481,16 @@ export default function Dashboard() {
                     }}
                     className={`flex items-center w-full p-4 rounded-xl transition-all duration-200 group ${
                       activePanel === 'detection' 
-                        ? 'bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-400 border border-purple-500/30' 
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-300 border border-yellow-500/30' 
+                        : 'text-white/70 hover:text-white hover:bg-blue-800/30'
                     }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className={`p-2 rounded-lg mr-3 ${
                       activePanel === 'detection'
-                        ? 'bg-purple-500/20'
-                        : 'bg-white/10 group-hover:bg-white/20'
+                        ? 'bg-yellow-500/20'
+                        : 'bg-blue-800/30 group-hover:bg-blue-700/30'
                     }`}>
                       <Brain className="w-5 h-5" />
                     </div>
@@ -513,8 +513,8 @@ export default function Dashboard() {
                     }}
                     className={`flex items-center w-full p-4 rounded-xl transition-all duration-200 group ${
                       activePanel === 'navigation' 
-                        ? 'bg-gradient-to-r from-blue-500/20 to-cyan-500/20 text-blue-400 border border-blue-500/30' 
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        ? 'bg-gradient-to-r from-blue-500/20 to-blue-700/20 text-blue-300 border border-blue-500/30' 
+                        : 'text-white/70 hover:text-white hover:bg-blue-800/30'
                     }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -522,7 +522,7 @@ export default function Dashboard() {
                     <div className={`p-2 rounded-lg mr-3 ${
                       activePanel === 'navigation'
                         ? 'bg-blue-500/20'
-                        : 'bg-white/10 group-hover:bg-white/20'
+                        : 'bg-blue-800/30 group-hover:bg-blue-700/30'
                     }`}>
                       <Compass className="w-5 h-5" />
                     </div>
@@ -545,16 +545,16 @@ export default function Dashboard() {
                     }}
                     className={`flex items-center w-full p-4 rounded-xl transition-all duration-200 group ${
                       activePanel === 'voice' 
-                        ? 'bg-gradient-to-r from-violet-500/20 to-purple-500/20 text-violet-400 border border-violet-500/30' 
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        ? 'bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 text-yellow-300 border border-yellow-500/30' 
+                        : 'text-white/70 hover:text-white hover:bg-blue-800/30'
                     }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className={`p-2 rounded-lg mr-3 ${
                       activePanel === 'voice'
-                        ? 'bg-violet-500/20'
-                        : 'bg-white/10 group-hover:bg-white/20'
+                        ? 'bg-yellow-500/20'
+                        : 'bg-blue-800/30 group-hover:bg-blue-700/30'
                     }`}>
                       <Headphones className="w-5 h-5" />
                     </div>
@@ -577,16 +577,16 @@ export default function Dashboard() {
                     }}
                     className={`flex items-center w-full p-4 rounded-xl transition-all duration-200 group ${
                       activePanel === 'emergency' 
-                        ? 'bg-gradient-to-r from-red-500/20 to-orange-500/20 text-red-400 border border-red-500/30' 
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        ? 'bg-gradient-to-r from-yellow-600/20 to-yellow-700/20 text-yellow-300 border border-yellow-600/30' 
+                        : 'text-white/70 hover:text-white hover:bg-blue-800/30'
                     }`}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <div className={`p-2 rounded-lg mr-3 ${
                       activePanel === 'emergency'
-                        ? 'bg-red-500/20'
-                        : 'bg-white/10 group-hover:bg-white/20'
+                        ? 'bg-yellow-600/20'
+                        : 'bg-blue-800/30 group-hover:bg-blue-700/30'
                     }`}>
                       <Shield className="w-5 h-5" />
                     </div>
@@ -603,23 +603,23 @@ export default function Dashboard() {
                   </motion.button>
                 </nav>
                 
-                <div className="mt-8 pt-6 border-t border-white/10">
-                  <h3 className="text-xs uppercase text-white/50 font-bold mb-4 px-2 tracking-wider">Quick Settings</h3>
+                <div className="mt-8 pt-6 border-t border-blue-700/50">
+                  <h3 className="text-xs uppercase text-blue-300/70 font-bold mb-4 px-2 tracking-wider">Quick Settings</h3>
                   <div className="space-y-2">
                     <motion.button
                       onClick={toggleVoice}
                       className={`flex items-center w-full p-4 rounded-xl transition-all duration-200 group ${
                         voiceEnabled
-                          ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border border-green-500/30'
-                          : 'text-white/70 hover:text-white hover:bg-white/10'
+                          ? 'bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-300 border border-blue-500/30'
+                          : 'text-white/70 hover:text-white hover:bg-blue-800/30'
                       }`}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <div className={`p-2 rounded-lg mr-3 ${
                         voiceEnabled
-                          ? 'bg-green-500/20'
-                          : 'bg-white/10 group-hover:bg-white/20'
+                          ? 'bg-blue-500/20'
+                          : 'bg-blue-800/30 group-hover:bg-blue-700/30'
                       }`}>
                         {voiceEnabled ? (
                           <Volume2 className="w-5 h-5" />
@@ -630,8 +630,8 @@ export default function Dashboard() {
                       <span className="font-medium">Voice Feedback</span>
                       <div className={`ml-auto px-2 py-1 rounded-lg text-xs font-bold ${
                         voiceEnabled
-                          ? 'bg-green-500/20 text-green-400'
-                          : 'bg-red-500/20 text-red-400'
+                          ? 'bg-blue-500/20 text-blue-300'
+                          : 'bg-yellow-500/20 text-yellow-400'
                       }`}>
                         {voiceEnabled ? 'ON' : 'OFF'}
                       </div>
@@ -639,21 +639,21 @@ export default function Dashboard() {
                   </div>
                   
                   {/* AI Status */}
-                  <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className="mt-6 p-4 bg-blue-900/30 rounded-xl border border-blue-700/30">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-white/70 text-sm font-medium">AI Status</span>
+                      <span className="text-blue-300/90 text-sm font-medium">AI Status</span>
                       <div className="flex items-center space-x-2">
                         <div className={`w-2 h-2 rounded-full ${
-                          systemStatus.ai === 'online' ? 'bg-green-400' : 'bg-red-400'
+                          systemStatus.ai === 'online' ? 'bg-yellow-400' : 'bg-red-400'
                         }`} />
                         <span className={`text-xs font-bold ${
-                          systemStatus.ai === 'online' ? 'text-green-400' : 'text-red-400'
+                          systemStatus.ai === 'online' ? 'text-yellow-400' : 'bg-red-400'
                         }`}>
                           {systemStatus.ai === 'online' ? 'ONLINE' : 'OFFLINE'}
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3 text-xs text-white/50">
+                    <div className="flex items-center space-x-3 text-xs text-blue-300/70">
                       <div className="flex items-center space-x-1">
                         <Activity className="w-3 h-3" />
                         <span>Processing</span>
@@ -685,14 +685,14 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent mb-2">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent mb-2">
               {activePanel === 'webcam' && 'Camera Feed'}
               {activePanel === 'detection' && 'AI Object Detection'}
               {activePanel === 'navigation' && 'Smart Navigation'}
               {activePanel === 'voice' && 'Voice Control'}
               {activePanel === 'emergency' && 'Emergency Services'}
             </h1>
-            <p className="text-white/60 text-lg">
+            <p className="text-blue-800 text-lg font-medium">
               {activePanel === 'webcam' && 'View your surroundings with enhanced visual clarity'}
               {activePanel === 'detection' && 'AI-powered object identification and analysis'}
               {activePanel === 'navigation' && 'Intelligent guidance and location services'}
