@@ -22,7 +22,7 @@ interface ButtonProps {
   children: React.ReactNode
   onClick?: () => void
   className?: string
-  variant?: 'primary' | 'secondary' | 'outline'
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost'
   size?: 'sm' | 'md' | 'lg'
 }
 
@@ -38,7 +38,8 @@ const Button: React.FC<ButtonProps> = ({
   const variants = {
     primary: 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-blue-900 hover:from-yellow-400 hover:to-yellow-500 focus:ring-yellow-300 shadow-lg hover:shadow-xl',
     secondary: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-500 hover:to-blue-600 focus:ring-blue-300 shadow-lg hover:shadow-xl',
-    outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50 focus:ring-blue-300'
+    outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50 focus:ring-blue-300',
+    ghost: 'border border-white/70 text-white hover:bg-white/10 focus:ring-white/30'
   }
   
   const sizes = {

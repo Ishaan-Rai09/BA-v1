@@ -1,8 +1,8 @@
 import { forwardRef, HTMLAttributes } from 'react'
-import { motion } from 'framer-motion'
+import { motion, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/utils/utils'
 
-interface LuxuryCardProps extends HTMLAttributes<HTMLDivElement> {
+type LuxuryCardProps = HTMLAttributes<HTMLDivElement> & {
   children: React.ReactNode
   variant?: 'default' | 'glass' | 'elevated' | 'gradient' | 'gold' | 'dark' | 'minimal' | 'frosted'
   animation?: boolean
@@ -66,30 +66,39 @@ const LuxuryCard = forwardRef<HTMLDivElement, LuxuryCardProps>(
       frosted: 'border-2 border-white/60'
     }
 
-    const Component = animation ? motion.div : 'div'
-    const motionProps = animation ? {
-      initial: { opacity: 0, y: 20 },
-      animate: { opacity: 1, y: 0 },
-      transition: { duration: 0.5, ease: "easeOut" }
-    } : {}
+    const cardClasses = cn(
+      'rounded-2xl overflow-hidden',
+      'dark:bg-slate-900/90 dark:border-slate-700/50',
+      variants[variant],
+      hoverable && hoverEffects[variant],
+      glowing && glowEffects[variant],
+      bordered && borderEffects[variant],
+      className
+    )
+
+    if (animation) {
+      return (
+        <motion.div
+          ref={ref}
+          className={cardClasses}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          {...(props as any)}
+        >
+          {children}
+        </motion.div>
+      )
+    }
 
     return (
-      <Component
+      <div
         ref={ref}
-        className={cn(
-          'rounded-2xl overflow-hidden',
-          'dark:bg-slate-900/90 dark:border-slate-700/50',
-          variants[variant],
-          hoverable && hoverEffects[variant],
-          glowing && glowEffects[variant],
-          bordered && borderEffects[variant],
-          className
-        )}
-        {...motionProps}
+        className={cardClasses}
         {...props}
       >
         {children}
-      </Component>
+      </div>
     )
   }
 )

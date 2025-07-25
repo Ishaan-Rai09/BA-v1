@@ -1,8 +1,8 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react'
-import { motion } from 'framer-motion'
+import { motion, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-interface LuxuryButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+type LuxuryButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'ghost' | 'outline' | 'gold'
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
   loading?: boolean
@@ -55,25 +55,27 @@ const LuxuryButton = forwardRef<HTMLButtonElement, LuxuryButtonProps>(
       gold: 'shadow-[0_0_20px_rgba(212,175,55,0.6)]'
     }
 
+    const buttonClasses = cn(
+      'relative font-medium transition-all duration-300 transform',
+      'focus-visible-enhanced',
+      'disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:filter disabled:grayscale',
+      'after:content-[""] after:absolute after:inset-0 after:z-[-1] after:rounded-[inherit] after:opacity-0 after:transition-opacity hover:after:opacity-100',
+      variants[variant],
+      sizes[size],
+      fullWidth && 'w-full',
+      glowing && glowEffects[variant],
+      className
+    )
+
     return (
       <motion.button
         ref={ref}
         whileHover={{ scale: disabled || loading ? 1 : 1.03 }}
         whileTap={{ scale: disabled || loading ? 1 : 0.97 }}
         transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-        className={cn(
-          'relative font-medium transition-all duration-300 transform',
-          'focus-visible-enhanced',
-          'disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none disabled:filter disabled:grayscale',
-          'after:content-[""] after:absolute after:inset-0 after:z-[-1] after:rounded-[inherit] after:opacity-0 after:transition-opacity hover:after:opacity-100',
-          variants[variant],
-          sizes[size],
-          fullWidth && 'w-full',
-          glowing && glowEffects[variant],
-          className
-        )}
+        className={buttonClasses}
         disabled={disabled || loading}
-        {...props}
+        {...(props as any)}
       >
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center">

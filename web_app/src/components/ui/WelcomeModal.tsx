@@ -6,6 +6,7 @@ import { X, ChevronRight, ChevronLeft, Check, Camera, Mic, Navigation, AlertTria
 import { LuxuryButton } from './LuxuryButton'
 import { LuxuryCard } from './LuxuryCard'
 import { useVoice } from '@/contexts/VoiceContext'
+import React from 'react'
 
 interface WelcomeModalProps {
   onClose: () => void
@@ -126,7 +127,7 @@ export function WelcomeModal({ onClose, onComplete }: WelcomeModalProps) {
                     transition={{ delay: 0.2, duration: 0.8 }}
                     className="bg-white/20 backdrop-blur-md p-4 rounded-full mb-4"
                   >
-                    <steps[currentStep].icon className="w-12 h-12" />
+                    {React.createElement(steps[currentStep].icon, { className: "w-12 h-12" })}
                   </motion.div>
                   
                   <motion.h2

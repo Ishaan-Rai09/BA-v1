@@ -1,4 +1,5 @@
 import { ClerkProvider } from '@clerk/nextjs'
+import { dark } from '@clerk/themes'
 import { Inter, Playfair_Display, JetBrains_Mono } from 'next/font/google'
 import { Metadata } from 'next'
 import './globals.css'
@@ -104,7 +105,6 @@ export default function RootLayout({
       >
         <ClerkProvider 
           appearance={{
-            baseTheme: 'light',
             variables: {
               colorPrimary: '#0ea5e9',
               colorBackground: '#ffffff',
