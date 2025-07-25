@@ -6,37 +6,153 @@ module.exports = {
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {
-      // Luxurious color palette with high contrast for accessibility
-      colors: {
-        primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
-        },
-        luxury: {
-          gold: '#d4af37',
-          darkGold: '#b8941f',
-          platinum: '#e5e4e2',
-          midnight: '#191970',
-          deepBlue: '#003366',
-          royal: '#4169e1',
-        },
-        accessibility: {
-          focus: '#ffbf00',
-          success: '#22c55e',
-          warning: '#f59e0b',
-          error: '#ef4444',
-          info: '#3b82f6',
-        },
+    colors: {
+      // Pure White Palette
+      white: '#ffffff',
+      'white-warm': '#fefefe',
+      'white-cool': '#fafbff',
+      'white-pearl': '#f8f9fa',
+      
+      // Luxury Blue Palette
+      blue: {
+        50: '#f0f6ff',
+        100: '#e6f1ff',
+        200: '#cce4ff',
+        300: '#99d0ff',
+        400: '#66bcff',
+        500: '#1e90ff',
+        600: '#0066cc',
+        700: '#004499',
+        800: '#003366',
+        900: '#001a33',
+        950: '#000d1a',
       },
+      
+      // Premium Yellow/Gold Palette
+      yellow: {
+        50: '#fffdf0',
+        100: '#fffae6',
+        200: '#fff5cc',
+        300: '#ffeb99',
+        400: '#ffe066',
+        500: '#ffd700',
+        600: '#ffcc00',
+        700: '#cc9900',
+        800: '#996600',
+        900: '#663300',
+        950: '#331a00',
+      },
+      
+      // Neutral grays (minimal use)
+      gray: {
+        50: '#f9fafb',
+        100: '#f3f4f6',
+        200: '#e5e7eb',
+        300: '#d1d5db',
+        400: '#9ca3af',
+        500: '#6b7280',
+        600: '#4b5563',
+        700: '#374151',
+        800: '#1f2937',
+        900: '#111827',
+      },
+      
+      // Brand Colors
+      primary: {
+        50: '#f0f6ff',
+        100: '#e6f1ff',
+        200: '#cce4ff',
+        300: '#99d0ff',
+        400: '#66bcff',
+        500: '#1e90ff',
+        600: '#0066cc',
+        700: '#004499',
+        800: '#003366',
+        900: '#001a33',
+      },
+      
+      secondary: {
+        50: '#fffdf0',
+        100: '#fffae6',
+        200: '#fff5cc',
+        300: '#ffeb99',
+        400: '#ffe066',
+        500: '#ffd700',
+        600: '#ffcc00',
+        700: '#cc9900',
+        800: '#996600',
+        900: '#663300',
+      },
+      
+      // Special luxury colors
+      luxury: {
+        gold: '#ffd700',
+        'gold-light': '#ffeb99',
+        'gold-dark': '#cc9900',
+        sapphire: '#0066cc',
+        'sapphire-light': '#99d0ff',
+        'sapphire-dark': '#003366',
+        pearl: '#f8f9fa',
+        platinum: '#e6f1ff',
+        midnight: '#001a33', // Added for dark backgrounds
+        royal: '#1e3a8a', // Added for dark backgrounds
+      },
+
+      // Additional colors for better contrast
+      black: '#000000',
+      slate: {
+        50: '#f8fafc',
+        100: '#f1f5f9',
+        200: '#e2e8f0',
+        300: '#cbd5e1',
+        400: '#94a3b8',
+        500: '#64748b',
+        600: '#475569',
+        700: '#334155',
+        800: '#1e293b',
+        900: '#0f172a',
+      },
+      emerald: {
+        500: '#10b981',
+        600: '#059669',
+        700: '#047857',
+      },
+      red: {
+        400: '#f87171',
+        500: '#ef4444',
+        600: '#dc2626',
+        700: '#b91c1c',
+      },
+      green: {
+        400: '#4ade80',
+        500: '#22c55e',
+        600: '#16a34a',
+      },
+      purple: {
+        400: '#c084fc',
+        500: '#a855f7',
+        600: '#9333ea',
+        900: '#581c87',
+      },
+      pink: {
+        500: '#ec4899',
+      },
+      orange: {
+        500: '#f97316',
+      },
+      cyan: {
+        400: '#22d3ee',
+        500: '#06b6d4',
+      },
+      violet: {
+        400: '#a78bfa',
+        500: '#8b5cf6',
+      },
+      teal: {
+        500: '#14b8a6',
+      },
+    },
+    extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
         serif: ['Playfair Display', 'serif'],
@@ -131,6 +247,38 @@ module.exports = {
         },
         '.high-contrast': {
           filter: 'contrast(1.2)',
+        },
+        '.text-high-contrast': {
+          color: 'rgb(255, 255, 255)',
+          textShadow: '0 0 2px rgba(0, 0, 0, 0.8)',
+        },
+        '.bg-high-contrast': {
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          backdropFilter: 'blur(10px)',
+        },
+        '.accessible-text': {
+          fontSize: '1rem',
+          lineHeight: '1.6',
+          fontWeight: '500',
+          letterSpacing: '0.025em',
+        },
+        // New utility classes for better text contrast
+        '.text-shadow-sm': {
+          textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+        },
+        '.text-shadow-md': {
+          textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+        },
+        '.text-shadow-lg': {
+          textShadow: '0 4px 6px rgba(0, 0, 0, 0.7)',
+        },
+        '.text-contrast-light': {
+          color: '#ffffff',
+          textShadow: '0 1px 3px rgba(0, 0, 0, 0.6)',
+        },
+        '.text-contrast-dark': {
+          color: '#111827',
+          textShadow: '0 1px 3px rgba(255, 255, 255, 0.3)',
         },
       };
       addUtilities(newUtilities);

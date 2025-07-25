@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useRouter } from 'next/navigation'
 import { useUser, SignOutButton } from '@clerk/nextjs'
 import { 
   Mic, 
@@ -57,6 +58,7 @@ interface DetectedObject {
 }
 
 export default function Dashboard() {
+  const router = useRouter()
   const { user, isLoaded } = useUser()
   
   const { 
@@ -228,7 +230,7 @@ export default function Dashboard() {
               </motion.div>
             </motion.button>
             
-            <div className="flex items-center">
+            <div className="flex items-center space-x-4">
               <motion.div
                 className="flex items-center space-x-2"
                 initial={{ opacity: 0, x: -20 }}
@@ -241,6 +243,21 @@ export default function Dashboard() {
                   Blind Assistant
                 </h1>
               </motion.div>
+              
+              {/* Back to Landing Page Button */}
+              <motion.button
+                onClick={() => {
+                  speak('Navigating to landing page')
+                  router.push('/')
+                }}
+                className="hidden md:flex items-center space-x-2 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 hover:text-white transition-all duration-200 group"
+                aria-label="Back to landing page"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Home className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-medium">Home</span>
+              </motion.button>
             </div>
           </div>
           
@@ -406,6 +423,24 @@ export default function Dashboard() {
               className="bg-black/20 backdrop-blur-xl border-r border-white/10 h-full fixed left-0 top-16 z-20 overflow-y-auto"
             >
               <div className="p-6">
+                {/* Back to Home Button for Mobile */}
+                <motion.button
+                  onClick={() => {
+                    speak('Navigating to landing page')
+                    router.push('/')
+                    setSidebarOpen(false)
+                  }}
+                  className="flex items-center w-full p-4 rounded-xl transition-all duration-200 group text-white/70 hover:text-white hover:bg-white/10 mb-4 md:hidden"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <div className="p-2 rounded-lg mr-3 bg-white/10 group-hover:bg-white/20">
+                    <Home className="w-5 h-5" />
+                  </div>
+                  <span className="font-medium">Back to Home</span>
+                  <ChevronRight className="w-4 h-4 ml-auto" />
+                </motion.button>
+                
                 <nav className="space-y-2">
                   <motion.button
                     onClick={() => {
@@ -638,8 +673,11 @@ export default function Dashboard() {
         {/* Main Content */}
         <main 
           className={`flex-1 p-6 overflow-y-auto transition-all duration-300 ${
-            sidebarOpen ? 'md:ml-70' : ''
+            sidebarOpen && !isMobile ? 'ml-70' : ''
           }`}
+          style={{
+            marginLeft: sidebarOpen && !isMobile ? '280px' : '0'
+          }}
         >
           {/* Panel Title */}
           <motion.div 

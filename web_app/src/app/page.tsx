@@ -1,147 +1,103 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useAuth, SignInButton } from '@clerk/nextjs'
 import { 
   Mic, 
-  Camera, 
-  Navigation, 
-  AlertTriangle,
   Eye,
+  Navigation,
   ArrowRight,
   ChevronDown,
   ChevronRight,
   Shield,
-  MapPin,
-  Volume2,
   Star,
   CheckCircle,
   Sparkles,
-  Zap,
-  Heart,
-  Globe,
-  Users,
-  Award,
-  Play,
-  Brain,
-  Headphones,
-  Compass
+  Crown,
+  Award
 } from 'lucide-react'
-import { useVoice } from '@/contexts/VoiceContext'
-import { useAccessibility } from '@/contexts/AccessibilityContext'
-import { LuxuryButton } from '@/components/common/ui/LuxuryButton'
-import { LuxuryCard } from '@/components/common/ui/LuxuryCard'
-import { WelcomeModal } from '@/components/common/ui/WelcomeModal'
+
+interface ButtonProps {
+  children: React.ReactNode
+  onClick?: () => void
+  className?: string
+  variant?: 'primary' | 'secondary' | 'outline'
+  size?: 'sm' | 'md' | 'lg'
+}
+
+const Button: React.FC<ButtonProps> = ({ 
+  children, 
+  onClick, 
+  className = '', 
+  variant = 'primary', 
+  size = 'md' 
+}) => {
+  const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4'
+  
+  const variants = {
+    primary: 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-blue-900 hover:from-yellow-400 hover:to-yellow-500 focus:ring-yellow-300 shadow-lg hover:shadow-xl',
+    secondary: 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-500 hover:to-blue-600 focus:ring-blue-300 shadow-lg hover:shadow-xl',
+    outline: 'border-2 border-blue-600 text-blue-600 hover:bg-blue-50 focus:ring-blue-300'
+  }
+  
+  const sizes = {
+    sm: 'px-4 py-2 text-sm',
+    md: 'px-6 py-3 text-base',
+    lg: 'px-8 py-4 text-lg'
+  }
+  
+  return (
+    <button
+      onClick={onClick}
+      className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`}
+    >
+      {children}
+    </button>
+  )
+}
 
 export default function LandingPage() {
-  const { speak } = useVoice()
-  const { announceScreenReader } = useAccessibility()
-  const { isSignedIn, isLoaded: authLoaded } = useAuth()
+  const { isSignedIn } = useAuth()
   const router = useRouter()
-  const [showWelcome, setShowWelcome] = useState(false)
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [activeFeature, setActiveFeature] = useState(0)
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-
-  // Redirect to dashboard if already signed in
-  useEffect(() => {
-    if (authLoaded && isSignedIn) {
-      router.push('/dashboard')
-    }
-  }, [authLoaded, isSignedIn, router])
-
-  // Initialize animations and mouse tracking
-  useEffect(() => {
-    setIsLoaded(true)
-    
-    // Auto-rotate features
-    const interval = setInterval(() => {
-      setActiveFeature(prev => (prev + 1) % 3)
-    }, 4000)
-    
-    // Mouse tracking for parallax effect
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100
-      })
-    }
-    
-    // Check if API is available
-    fetch('/api/health').catch(() => {
-      console.log('API not available')
-    })
-    
-    // Announce page loaded for screen readers
-    setTimeout(() => {
-      announceScreenReader('Blind Assistant landing page loaded')
-    }, 1000)
-    
-    window.addEventListener('mousemove', handleMouseMove)
-    
-    return () => {
-      clearInterval(interval)
-      window.removeEventListener('mousemove', handleMouseMove)
-    }
-  }, [])
-
-  const handleGetStarted = () => {
-    if (isSignedIn) {
-      router.push('/dashboard')
-    } else {
-      setShowWelcome(true)
-      speak('Please sign in to access Blind Assistant')
-    }
-  }
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
-      speak(`Scrolled to ${id} section`)
     }
   }
 
-  const features = [
-    {
-      icon: Brain,
-      title: "AI-Powered Vision",
-      description: "Advanced computer vision that understands your world",
-      color: "from-purple-500 to-pink-500"
-    },
-    {
-      icon: Headphones,
-      title: "Voice Intelligence",
-      description: "Natural conversation with smart voice recognition",
-      color: "from-blue-500 to-cyan-500"
-    },
-    {
-      icon: Compass,
-      title: "Smart Navigation", 
-      description: "Intelligent guidance that adapts to your journey",
-      color: "from-emerald-500 to-teal-500"
-    }
-  ]
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden">
-      {/* Welcome Modal */}
-      <AnimatePresence>
-        {showWelcome && (
-          <WelcomeModal 
-            onClose={() => setShowWelcome(false)}
-            onComplete={() => {
-              setShowWelcome(false)
-              router.push('/dashboard')
-            }}
-          />
-        )}
-      </AnimatePresence>
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-yellow-50">
+      {/* Navigation */}
+      <nav className="bg-white/90 backdrop-blur-lg border-b border-blue-100 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl flex items-center justify-center">
+                <Crown className="w-6 h-6 text-yellow-400" />
+              </div>
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
+                Blind Assistant
+              </span>
+            </div>
+            
+            {isSignedIn && (
+              <Button onClick={() => router.push('/dashboard')} variant="secondary" size="sm">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
+            )}
+          </div>
+        </div>
+      </nav>
+      
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className={`relative min-h-screen flex items-center justify-center overflow-hidden ${
+        isSignedIn ? 'pt-16' : ''
+      }`}>
         {/* Animated Background */}
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 via-blue-900/20 to-teal-900/20"></div>
@@ -202,8 +158,8 @@ export default function LandingPage() {
               transition={{ duration: 0.8, delay: 0.2 }}
             >
               <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-6 leading-tight">
-                <span className="bg-gradient-to-r from-white to-luxury-platinum bg-clip-text text-transparent">Blind</span>
-                <span className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold bg-clip-text text-transparent"> Assistant</span>
+                <span className="bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">Blind</span>
+                <span className="bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent"> Assistant</span>
               </h1>
             </motion.div>
 
@@ -223,38 +179,38 @@ export default function LandingPage() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
               {isSignedIn ? (
-                <LuxuryButton
+                <Button
                   onClick={() => router.push('/dashboard')}
                   size="lg"
-                  className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium group"
+                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-blue-900 font-medium group"
                 >
                   <span className="flex items-center">
                     Go to Dashboard
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </span>
-                </LuxuryButton>
+                </Button>
               ) : (
                 <SignInButton mode="modal">
-                  <LuxuryButton
+                  <Button
                     size="lg"
-                    className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium group"
+                    className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-blue-900 font-medium group"
                   >
                     <span className="flex items-center">
                       Get Started
                       <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </span>
-                  </LuxuryButton>
+                  </Button>
                 </SignInButton>
               )}
 
-              <LuxuryButton
+              <Button
                 onClick={() => scrollToSection('features')}
-                variant="ghost"
+                variant="outline"
                 size="lg"
                 className="border border-white/30 text-white hover:bg-white/10"
               >
                 Explore Features
-              </LuxuryButton>
+              </Button>
             </motion.div>
 
             {/* Trust Badges */}
@@ -265,15 +221,15 @@ export default function LandingPage() {
               className="mt-16 flex flex-wrap justify-center gap-6 text-white/80"
             >
               <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 mr-2 text-luxury-gold" />
+                <CheckCircle className="w-5 h-5 mr-2 text-yellow-500" />
                 <span>WCAG 2.1 AAA Compliant</span>
               </div>
               <div className="flex items-center">
-                <Shield className="w-5 h-5 mr-2 text-luxury-gold" />
+                <Shield className="w-5 h-5 mr-2 text-yellow-500" />
                 <span>Privacy Focused</span>
               </div>
               <div className="flex items-center">
-                <Star className="w-5 h-5 mr-2 text-luxury-gold" />
+                <Star className="w-5 h-5 mr-2 text-yellow-500" />
                 <span>Award-Winning Design</span>
               </div>
             </motion.div>
@@ -298,166 +254,170 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-24 bg-gradient-to-b from-white to-gray-50">
+      <section id="features" className="py-24 bg-gradient-to-b from-white to-blue-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4 bg-gradient-to-r from-luxury-midnight to-primary-700 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4 bg-gradient-to-r from-blue-900 to-blue-700 bg-clip-text text-transparent">
               Premium Features
             </h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+            <p className="text-xl text-blue-800 max-w-3xl mx-auto">
               Experience unparalleled assistive technology with our suite of premium features designed for accessibility and independence.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <LuxuryCard variant="gradient" className="p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <div className="bg-gradient-to-br from-primary-500 to-primary-700 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-glow">
+            <div className="bg-white p-8 rounded-2xl shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-blue-100">
+              <div className="bg-gradient-to-br from-blue-600 to-blue-700 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                 <Mic className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-serif font-bold mb-3">Voice Commands</h3>
-              <p className="text-slate-600 mb-4">
+              <h3 className="text-2xl font-serif font-bold mb-3 text-blue-900">Voice Commands</h3>
+              <p className="text-blue-700 mb-4">
                 Control the entire application with natural voice commands for a truly hands-free experience.
               </p>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Natural language processing</span>
+                  <CheckCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="text-blue-800">Natural language processing</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Contextual understanding</span>
+                  <CheckCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="text-blue-800">Contextual understanding</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Multi-language support</span>
+                  <CheckCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="text-blue-800">Multi-language support</span>
                 </li>
               </ul>
               {isSignedIn ? (
-                <LuxuryButton 
+                <Button 
                   onClick={() => router.push('/dashboard')}
-                  className="w-full bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black"
+                  className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-blue-900"
                 >
                   Try Voice Commands
-                </LuxuryButton>
+                </Button>
               ) : (
                 <SignInButton mode="modal">
-                  <LuxuryButton 
-                    className="w-full bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black"
+                  <Button 
+                    className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-blue-900"
                   >
                     Try Voice Commands
-                  </LuxuryButton>
+                  </Button>
                 </SignInButton>
               )}
-            </LuxuryCard>
+            </div>
 
             {/* Feature 2 */}
-            <LuxuryCard variant="gradient" className="p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <div className="bg-gradient-to-br from-luxury-royal to-luxury-midnight w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-glow">
+            <div className="bg-white p-8 rounded-2xl shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-blue-100">
+              <div className="bg-gradient-to-br from-blue-700 to-blue-800 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                 <Eye className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-2xl font-serif font-bold mb-3">Object Detection</h3>
-              <p className="text-slate-600 mb-4">
+              <h3 className="text-2xl font-serif font-bold mb-3 text-blue-900">Object Detection</h3>
+              <p className="text-blue-700 mb-4">
                 Advanced AI-powered object detection provides real-time information about your surroundings.
               </p>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Real-time identification</span>
+                  <CheckCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="text-blue-800">Real-time identification</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Distance estimation</span>
+                  <CheckCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="text-blue-800">Distance estimation</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Obstacle warnings</span>
+                  <CheckCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="text-blue-800">Obstacle warnings</span>
                 </li>
               </ul>
               {isSignedIn ? (
-                <LuxuryButton 
+                <Button 
                   onClick={() => router.push('/dashboard')}
-                  className="w-full bg-gradient-to-r from-luxury-royal to-luxury-midnight text-white"
+                  variant="secondary"
+                  className="w-full"
                 >
                   Try Object Detection
-                </LuxuryButton>
+                </Button>
               ) : (
                 <SignInButton mode="modal">
-                  <LuxuryButton 
-                    className="w-full bg-gradient-to-r from-luxury-royal to-luxury-midnight text-white"
+                  <Button 
+                    variant="secondary"
+                    className="w-full"
                   >
                     Try Object Detection
-                  </LuxuryButton>
+                  </Button>
                 </SignInButton>
               )}
-            </LuxuryCard>
+            </div>
 
             {/* Feature 3 */}
-            <LuxuryCard variant="gradient" className="p-8 transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-              <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 shadow-glow">
-                <Navigation className="w-8 h-8 text-white" />
+            <div className="bg-white p-8 rounded-2xl shadow-xl transform transition-all duration-300 hover:scale-105 hover:shadow-2xl border border-blue-100">
+              <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
+                <Navigation className="w-8 h-8 text-blue-900" />
               </div>
-              <h3 className="text-2xl font-serif font-bold mb-3">Navigation</h3>
-              <p className="text-slate-600 mb-4">
+              <h3 className="text-2xl font-serif font-bold mb-3 text-blue-900">Navigation</h3>
+              <p className="text-blue-700 mb-4">
                 Intelligent navigation assistance to help you reach your destination safely and efficiently.
               </p>
               <ul className="space-y-2 mb-6">
                 <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Voice-guided directions</span>
+                  <CheckCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="text-blue-800">Voice-guided directions</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Landmark recognition</span>
+                  <CheckCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="text-blue-800">Landmark recognition</span>
                 </li>
                 <li className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                  <span>Accessible route planning</span>
+                  <CheckCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  <span className="text-blue-800">Accessible route planning</span>
                 </li>
               </ul>
               {isSignedIn ? (
-                <LuxuryButton 
+                <Button 
                   onClick={() => router.push('/dashboard')}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white"
+                  className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-blue-900"
                 >
                   Try Navigation
-                </LuxuryButton>
+                </Button>
               ) : (
                 <SignInButton mode="modal">
-                  <LuxuryButton 
-                    className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white"
+                  <Button 
+                    className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 text-blue-900"
                   >
                     Try Navigation
-                  </LuxuryButton>
+                  </Button>
                 </SignInButton>
               )}
-            </LuxuryCard>
+            </div>
           </div>
 
           {/* CTA Button */}
           <div className="mt-16 text-center">
             {isSignedIn ? (
-              <LuxuryButton
+              <Button
                 onClick={() => router.push('/dashboard')}
                 size="lg"
-                className="bg-gradient-to-r from-luxury-midnight to-primary-700 text-white group"
+                variant="secondary"
+                className="group"
               >
                 <span className="flex items-center">
                   Access Dashboard
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
-              </LuxuryButton>
+              </Button>
             ) : (
               <SignInButton mode="modal">
-                <LuxuryButton
+                <Button
                   size="lg"
-                  className="bg-gradient-to-r from-luxury-midnight to-primary-700 text-white group"
+                  variant="secondary"
+                  className="group"
                 >
                   <span className="flex items-center">
                     Sign In to Access Dashboard
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </span>
-                </LuxuryButton>
+                </Button>
               </SignInButton>
             )}
           </div>
@@ -567,38 +527,38 @@ export default function LandingPage() {
                 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   {isSignedIn ? (
-                    <LuxuryButton
+                    <Button
                       onClick={() => router.push('/dashboard')}
                       size="lg"
-                      className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium"
+                      className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-medium px-8 py-4 text-lg rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300"
                     >
                       <span className="flex items-center">
                         Launch Dashboard
                         <ArrowRight className="ml-2 w-5 h-5" />
                       </span>
-                    </LuxuryButton>
+                    </Button>
                   ) : (
                     <SignInButton mode="modal">
-                      <LuxuryButton
+                      <Button
                         size="lg"
-                        className="bg-gradient-to-r from-luxury-gold to-luxury-darkGold text-black font-medium"
+                        className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-medium px-8 py-4 text-lg rounded-xl hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300"
                       >
                         <span className="flex items-center">
                           Start Free Trial
                           <ArrowRight className="ml-2 w-5 h-5" />
                         </span>
-                      </LuxuryButton>
+                      </Button>
                     </SignInButton>
                   )}
                   
-                  <LuxuryButton
+                  <Button
                     onClick={() => scrollToSection('features')}
                     variant="ghost"
                     size="lg"
-                    className="border border-white/30 text-white hover:bg-white/10"
+                    className="border border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg rounded-xl transition-all duration-300"
                   >
                     Learn More
-                  </LuxuryButton>
+                  </Button>
                 </div>
               </div>
             </motion.div>
