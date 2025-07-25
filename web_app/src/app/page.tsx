@@ -157,9 +157,9 @@ export default function LandingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-white mb-6 leading-tight">
-                <span className="bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">Blind</span>
-                <span className="bg-gradient-to-r from-yellow-500 to-yellow-600 bg-clip-text text-transparent"> Assistant</span>
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-blue-900 mb-6 leading-tight">
+                <span className="bg-gradient-to-r from-blue-800 to-blue-900 bg-clip-text text-transparent">Blind</span>
+                <span className="bg-gradient-to-r from-yellow-600 to-yellow-700 bg-clip-text text-transparent"> Assistant</span>
               </h1>
             </motion.div>
 
@@ -167,7 +167,7 @@ export default function LandingPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.6 }}
-              className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto"
+              className="text-xl md:text-2xl text-blue-800 mb-8 max-w-3xl mx-auto font-medium"
             >
               A world-class luxury assistive technology platform designed to enhance independence through voice commands, real-time object detection, and navigation assistance.
             </motion.p>
@@ -207,7 +207,7 @@ export default function LandingPage() {
                 onClick={() => scrollToSection('features')}
                 variant="outline"
                 size="lg"
-                className="border border-white/30 text-white hover:bg-white/10"
+                className="border border-blue-600 text-blue-800 hover:bg-blue-50 font-medium"
               >
                 Explore Features
               </Button>
@@ -218,7 +218,7 @@ export default function LandingPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 1.4 }}
-              className="mt-16 flex flex-wrap justify-center gap-6 text-white/80"
+              className="mt-16 flex flex-wrap justify-center gap-6 text-blue-800 font-medium"
             >
               <div className="flex items-center">
                 <CheckCircle className="w-5 h-5 mr-2 text-yellow-500" />
@@ -241,7 +241,7 @@ export default function LandingPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2, duration: 1 }}
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white/80"
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-blue-800 font-medium"
         >
           <span className="text-sm mb-2">Scroll to explore</span>
           <motion.div
@@ -428,10 +428,10 @@ export default function LandingPage() {
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4 bg-gradient-to-r from-luxury-midnight to-primary-700 bg-clip-text text-transparent">
+            <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4 bg-gradient-to-r from-blue-800 to-blue-900 bg-clip-text text-transparent">
               How It Works
             </h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+            <p className="text-xl text-blue-800 max-w-3xl mx-auto">
               Experience seamless assistive technology in three simple steps.
             </p>
           </div>
@@ -454,7 +454,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <h3 className="text-2xl font-serif font-bold mb-3">Sign Up & Authenticate</h3>
-              <p className="text-slate-600">
+              <p className="text-blue-800">
                 Create your secure account with our premium authentication system and personalize your accessibility preferences.
               </p>
             </motion.div>
@@ -476,7 +476,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <h3 className="text-2xl font-serif font-bold mb-3">Choose Your Tools</h3>
-              <p className="text-slate-600">
+              <p className="text-blue-800">
                 Access our suite of AI-powered tools: voice commands, object detection, navigation, and emergency assistance.
               </p>
             </motion.div>
@@ -498,7 +498,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <h3 className="text-2xl font-serif font-bold mb-3">Experience Freedom</h3>
-              <p className="text-slate-600">
+              <p className="text-blue-800">
                 Navigate your world with confidence using our advanced assistive technology designed for independence.
               </p>
             </motion.div>
@@ -521,7 +521,7 @@ export default function LandingPage() {
                 <h3 className="text-3xl font-serif font-bold text-white mb-4">
                   Ready to Experience Luxury Accessibility?
                 </h3>
-                <p className="text-slate-300 mb-8 max-w-2xl mx-auto">
+                <p className="text-white mb-8 max-w-2xl mx-auto">
                   Join thousands of users who have transformed their daily navigation with our award-winning assistive technology platform.
                 </p>
                 
@@ -555,7 +555,7 @@ export default function LandingPage() {
                     onClick={() => scrollToSection('features')}
                     variant="ghost"
                     size="lg"
-                    className="border border-white/30 text-white hover:bg-white/10 px-8 py-4 text-lg rounded-xl transition-all duration-300"
+                    className="border border-white text-white font-semibold hover:bg-white/20 px-8 py-4 text-lg rounded-xl transition-all duration-300 shadow-md"
                   >
                     Learn More
                   </Button>
